@@ -1,5 +1,5 @@
 from graphicsUtils import *
-import math, time
+import math, time, random
 from game import Directions
 
 ###########################
@@ -53,6 +53,7 @@ PACMAN_SCALE = 0.5
 
 # Food
 FOOD_COLOR = formatColor(1,1,1)
+OFF_COLOR = formatColor(0.0,0.0,0.0)
 FOOD_SIZE = 0.1
 
 # Laser
@@ -189,7 +190,7 @@ class PacmanGraphics:
     layout = self.layout
     self.drawWalls(layout.walls, WALL_COLOR)
     self.drawWalls(layout.doors, DOOR_COLOR)
-    self.food = self.drawFood(layout.food)
+    self.food = self.drawFood(layout.food, FOOD_COLOR)
     self.capsules = self.drawCapsules(layout.capsules)
     refresh()
 
@@ -229,6 +230,10 @@ class PacmanGraphics:
     else:
       self.moveGhost(agentState, agentIndex, prevState, prevImage)
     self.agentImages[agentIndex] = (agentState, prevImage)
+    letters = ['a','b','c','d','e','f','g','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+    for letter in letters:
+      if random.random() < 0.001:
+        self.flipColorRoom(letter, self.food)    
 
     if newState._foodEaten != None:
       self.removeFood(newState._foodEaten, self.food)
@@ -505,9 +510,8 @@ class PacmanGraphics:
       return False
     return walls[x][y]
 
-  def drawFood(self, foodMatrix):
+  def drawFood(self, foodMatrix,color):
     foodImages = []
-    color = FOOD_COLOR
     for xNum, x in enumerate(foodMatrix):
       if self.capture and (xNum * 2) <= foodMatrix.width: color = TEAM_COLORS[0]
       if self.capture and (xNum * 2) > foodMatrix.width: color = TEAM_COLORS[1]
@@ -516,9 +520,13 @@ class PacmanGraphics:
       for yNum, cell in enumerate(x):
         if cell: # There's food here
           screen = self.to_screen((xNum, yNum ))
+          if self.layout.room[xNum][yNum] == 'H':
+            color = FOOD_COLOR
+          else:
+            color = OFF_COLOR        
           dot = circle( screen,
                         FOOD_SIZE * self.gridSize,
-                        outlineColor = color, fillColor = color,
+                        outlineColor = color, fillColor=color,
                         width = 1)
           imageRow.append(dot)
         else:
@@ -536,6 +544,22 @@ class PacmanGraphics:
                         width = 1)
       capsuleImages[capsule] = dot
     return capsuleImages
+  def flipColorRoom(self, room, foodImages):
+    newKeyVal, color = 0,0
+    keyVal = (room, 'Off')
+    if keyVal not in self.layout.rooms_mapping.keys():
+      keyVal = (room, 'On')
+    if keyVal[1] == 'Off':
+      newKeyVal = (keyVal[0], 'On')
+      color = FOOD_COLOR
+    else:
+      newKeyVal = (keyVal[0], 'Off')
+      color = OFF_COLOR
+
+    for elem in self.layout.rooms_mapping[keyVal]:
+      changeColor(foodImages[elem[0]][elem[1]], color)
+    self.layout.rooms_mapping[newKeyVal] = self.layout.rooms_mapping[keyVal]
+    del self.layout.rooms_mapping[keyVal]
 
   def removeFood(self, cell, foodImages ):
     x, y = cell

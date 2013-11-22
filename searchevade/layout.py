@@ -120,7 +120,7 @@ class Layout:
       for x in range(self.width):
         room = self.room[x][y]
         if room != '%' and room != '|': 
-          self.rooms_mapping[room].append((x,y))
+          self.rooms_mapping[(room,'Off')].append((x,y))
         elif room == '|':
           self.rooms_mapping['door'].append((x,y))
         elif room == '%':
