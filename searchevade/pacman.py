@@ -174,7 +174,9 @@ class GameState:
     if walls[x][y] == True: ...
     """
     return self.data.layout.walls
-
+  def getCoords(self):
+    return self.data.layout.rooms
+  
   def getRooms(self):
     return self.data.layout.rooms_mapping
 
@@ -358,6 +360,9 @@ class PacmanRules:
       for index in range( 1, len( state.data.agentStates ) ):
         state.data.agentStates[index].scaredTimer = SCARED_TIME
   consume = staticmethod( consume )
+
+#  def hitTheLights(position, state):
+    
 
 class GhostRules:
   """
