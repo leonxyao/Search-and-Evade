@@ -180,6 +180,9 @@ class GameState:
   def getRooms(self):
     return self.data.layout.rooms_mapping
 
+  def getLayout(self):
+    return self.data.layout
+
   def hasFood(self, x, y):
     return self.data.food[x][y]
 
@@ -392,7 +395,7 @@ class GhostRules:
 
     ghostState = state.data.agentStates[ghostIndex]
     speed = GhostRules.GHOST_SPEED
-    if ghostState.scaredTimer > 0: speed /= 2.0
+    if ghostState.scaredTimer > 0: speed /= 1.0
     vector = Actions.directionToVector( action, speed )
     ghostState.configuration = ghostState.configuration.generateSuccessor( vector )
   applyAction = staticmethod( applyAction )
