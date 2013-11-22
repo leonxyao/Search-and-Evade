@@ -29,7 +29,7 @@ class Layout:
 
     self.processLayoutText(layoutText,roomText)
 
-    print self.rooms_mapping
+    #print self.rooms_mapping
     # self.initializeVisibilityMatrix()
     
   def getNumGhosts(self):

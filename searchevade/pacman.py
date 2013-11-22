@@ -175,6 +175,9 @@ class GameState:
     """
     return self.data.layout.walls
 
+  def getRooms(self):
+    return self.data.layout.rooms_mapping
+
   def hasFood(self, x, y):
     return self.data.food[x][y]
 
@@ -234,7 +237,7 @@ class GameState:
 # You shouldn't need to look through the code in this section of the file. #
 ############################################################################
 
-SCARED_TIME = 40    # Moves ghosts are scared
+SCARED_TIME = 400000000    # Moves ghosts are scared
 COLLISION_TOLERANCE = 0.7 # How close ghosts must be to Pacman to kill
 TIME_PENALTY = 1 # Number of points lost each round
 
@@ -414,10 +417,11 @@ class GhostRules:
   def collide( state, ghostState, agentIndex):
     if ghostState.scaredTimer > 0:
       state.data.scoreChange += 200
-      GhostRules.placeGhost(state, ghostState)
-      ghostState.scaredTimer = 0
+      # GhostRules.placeGhost(state, ghostState)
+      # ghostState.scaredTimer = 0
       # Added for first-person
       state.data._eaten[agentIndex] = True
+      state.data._win = True
     else:
       if not state.data._win:
         state.data.scoreChange -= 500

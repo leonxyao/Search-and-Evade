@@ -205,6 +205,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # BEGIN_YOUR_CODE (around 68 lines of code expected)
     score,action = self.getBestMinimaxValue(gameState,0,0)
+    #print gameState.getRooms()
     return action
     # END_YOUR_CODE
 
