@@ -329,18 +329,38 @@ class PacmanRules:
       raise Exception("Illegal action " + str(action))
 
     pacmanState = state.data.agentStates[0]
-
+    
     # Update Configuration
     vector = Actions.directionToVector( action, PacmanRules.PACMAN_SPEED )
     pacmanState.configuration = pacmanState.configuration.generateSuccessor( vector )
-
+    
     # Eat
     next = pacmanState.configuration.getPosition()
     nearest = nearestPoint( next )
+    PacmanRules.lightSwitches(state)
+
     # if manhattanDistance( nearest, next ) <= 0.5 :
     #   # Remove food
     #   PacmanRules.consume( nearest, state )
   applyAction = staticmethod( applyAction )
+
+  def lightSwitches(state):
+    if len(state.data.roomsOn) == 1:
+        sample = random.sample(state.data.roomsOff, 4)
+        for samp in sample:
+          state.data.roomsOff.remove(samp)
+          state.data.roomsOn.add(samp)
+    elif random.random()<0.1:
+      print "switching rooms"
+      state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
+      state.data.roomsOn = {'h'}
+      sample = random.sample(state.data.roomsOff, 4)
+      for samp in sample:
+        state.data.roomsOff.remove(samp)
+        state.data.roomsOn.add(samp)
+    print state.data.roomsOff
+    print state.data.roomsOn
+  lightSwitches = staticmethod(lightSwitches) 
 
   def consume( position, state ):
     x,y = position
