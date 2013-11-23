@@ -392,26 +392,48 @@ class GhostRules:
   These functions dictate how ghosts interact with their environment.
   """
   GHOST_SPEED=1.0
+
   def getLegalActions( state, ghostIndex ):
     """
     Ghosts cannot stop, and cannot turn around unless they
     reach a dead end, but can turn 90 degrees at intersections.
     """
-    conf = state.getGhostState( ghostIndex ).configuration
-    possibleActions = Actions.getPossibleActions( conf, state.data.layout.walls )
-    reverse = Actions.reverseDirection( conf.direction )
-    if Directions.STOP in possibleActions:
-      possibleActions.remove( Directions.STOP )
-    if reverse in possibleActions and len( possibleActions ) > 1:
-      possibleActions.remove( reverse )
+    def getActions(gameState,loc):
+      locX = int(loc[0])
+      locY = int(loc[1])
+      layout = gameState.getLayout()
+      layoutRoom = gameState.getLayout().room
+      #print len(layoutText),len(layoutText[0])
+
+      legalActions = []
+      if layoutRoom[locX-1][locY] != '%':
+        legalActions.append('West')
+      if layoutRoom[locX+1][locY] != '%':
+        legalActions.append('East')
+      if layoutRoom[locX][locY-1] != '%':
+        legalActions.append('South')
+      if layoutRoom[locX][locY+1] != '%':
+        legalActions.append('North')
+      #print legalActions
+      return legalActions
+    #conf = state.getGhostState( ghostIndex ).configuration
+    #possibleActions = Actions.getPossibleActions( conf, state.data.layout.walls )
+    ghostLoc = state.getGhostPosition(ghostIndex)
+    possibleActions = getActions(state,ghostLoc)
+    # reverse = Actions.reverseDirection( conf.direction )
+    # if Directions.STOP in possibleActions:
+    #   possibleActions.remove( Directions.STOP )
+    # if reverse in possibleActions and len( possibleActions ) > 1:
+    #   possibleActions.remove( reverse )
+    print possibleActions
     return possibleActions
   getLegalActions = staticmethod( getLegalActions )
 
   def applyAction( state, action, ghostIndex):
 
     legal = GhostRules.getLegalActions( state, ghostIndex )
-    if action not in legal:
-      raise Exception("Illegal ghost action " + str(action))
+    # if action not in legal:
+    #   raise Exception("Illegal ghost action " + str(action))
 
     ghostState = state.data.agentStates[ghostIndex]
     speed = GhostRules.GHOST_SPEED
