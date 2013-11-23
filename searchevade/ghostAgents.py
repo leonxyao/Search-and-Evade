@@ -26,7 +26,7 @@ class RandomGhost( GhostAgent ):
     dist = util.Counter()
     #for a in state.getLegalActions( self.index ): dist[a] = 1.0
     dist[state.getLegalActions(self.index)[0]] = 1.0
-    print dist
+    #print dist
     dist.normalize()
     return dist
 
