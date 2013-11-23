@@ -239,39 +239,23 @@ class MinimaxAgent(MultiAgentSearchAgent):
     #print legalActions
     return legalActions
 
-    # if layoutText[locY][locX-1] != '%':
-    #   legalActions.append('West')
-    # if layoutText[locY][locX+1] != '%':
-    #   legalActions.append('East')
-    # if layoutText[locY-1][locX] != '%':
-    #   legalActions.append('South')
-    # if layoutText[locY+1][locX] != '%':
-    #   legalActions.append('North')
-
-
   def A_star(self,startLoc,endLoc,heuristic,gameState):
     layout = gameState.getLayout()
     already_visited = Grid(layout.width,layout.height,False)
     pq = self.PriorityQueue()
     endNode = self.node(endLoc[0],endLoc[1])
     startNode = self.node(startLoc[0],startLoc[1])
-    print 'start actions: ', self.getActions(gameState,startNode)
-    #print 'legal actions: ', startNode.gameState.getLegalActions(0)
-    #print 'startNode:',startNode.loc
+    #print 'start actions: ', self.getActions(gameState,startNode)
     pq.update(startNode,self.heuristic(startNode.loc,endNode.loc))
     while not pq.isEmpty():
       currNode = pq.removeMin()[0]
-      #if (29,13) == currNode.loc: print 'WEEEEEEEEEEEEEEEE'
-      #if currNode.loc == endNode.loc: print 'WOW'
-      #if already_visited[28][13]: print 'Hello'
-      #print 'currNode:',currNode.loc, 'endNode: ', endNode.loc
       if already_visited[currNode.loc[0]][currNode.loc[1]]: continue
       else: already_visited[currNode.loc[0]][currNode.loc[1]] = True
       if currNode.loc == endNode.loc:
-        print 'OLD',currNode.path
+        #print 'OLD',currNode.path
         #currNode.path.reverse()
         #print 'NEW',currNode.path
-        print already_visited
+        #print already_visited
         return currNode.path[0]
       for action in self.getActions(gameState,currNode):
       #for action in currNode.gameState.getLegalActions(0): #0 for pacman
@@ -290,7 +274,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         newNode.path = list(currNode.path)
         newNode.path.append(action)
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
-    print already_visited
+    #print already_visited
 
 
 
@@ -335,7 +319,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     ghostLoc = gameState.getGhostPosition(1)
     #print pacmanLoc,ghostLoc
     action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-    print action, pacmanLoc , ghostLoc
+    #print action, pacmanLoc , ghostLoc
     return action
     # END_YOUR_CODE
 
