@@ -359,7 +359,11 @@ def sample(distribution, values = None):
   i, total= 0, distribution[0]
   while choice > total:
     i += 1
+    if i > len(distribution) or i > len(values): 
+      i-=1
+      break
     total += distribution[i]
+  print i , len(values)
   return values[i]
 
 def sampleFromCounter(ctr):
