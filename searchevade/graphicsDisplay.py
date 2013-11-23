@@ -230,10 +230,14 @@ class PacmanGraphics:
     else:
       self.moveGhost(agentState, agentIndex, prevState, prevImage)
     self.agentImages[agentIndex] = (agentState, prevImage)
-    letters = ['a','b','c','d','e','f','g','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-    for letter in letters:
-      if random.random() < 0.001:
-        self.flipColorRoom(letter, self.food)    
+    #for letter in letters:
+    #  if random.random() < 0.001:
+    #    self.flipColorRoom(letter, self.food)    
+
+    for elem in newState.roomsOff:
+      self.turnOff(elem, self.food)
+    for elem in newState.roomsOn:
+      self.turnOn(elem,self.food)
 
     if newState._foodEaten != None:
       self.removeFood(newState._foodEaten, self.food)
@@ -544,22 +548,14 @@ class PacmanGraphics:
                         width = 1)
       capsuleImages[capsule] = dot
     return capsuleImages
-  def flipColorRoom(self, room, foodImages):
-    newKeyVal, color = 0,0
-    keyVal = (room, 'Off')
-    if keyVal not in self.layout.rooms_mapping.keys():
-      keyVal = (room, 'On')
-    if keyVal[1] == 'Off':
-      newKeyVal = (keyVal[0], 'On')
-      color = FOOD_COLOR
-    else:
-      newKeyVal = (keyVal[0], 'Off')
-      color = OFF_COLOR
-
-    for elem in self.layout.rooms_mapping[keyVal]:
-      changeColor(foodImages[elem[0]][elem[1]], color)
-    self.layout.rooms_mapping[newKeyVal] = self.layout.rooms_mapping[keyVal]
-    del self.layout.rooms_mapping[keyVal]
+  
+  def turnOff(self, room, foodImages):
+    for elem in self.layout.rooms_mapping[room]:
+      changeColor(foodImages[elem[0]][elem[1]], OFF_COLOR)
+  
+  def turnOn(self, room, foodImages):
+    for elem in self.layout.rooms_mapping[room]:
+      changeColor(foodImages[elem[0]][elem[1]], FOOD_COLOR)
 
   def removeFood(self, cell, foodImages ):
     x, y = cell

@@ -363,6 +363,11 @@ class GameStateData:
       self.layout = prevState.layout
       self._eaten = prevState._eaten
       self.score = prevState.score
+      self.roomsOff = prevState.roomsOff
+      self.roomsOn = prevState.roomsOn
+    else:
+      self.roomsOff = set ('a b c d e f g h i j k l m n o p q r s t u v w x y z'.split())
+      self.roomsOn = set ('H')
     self._foodEaten = None
     self._capsuleEaten = None
     self._agentMoved = None
@@ -377,6 +382,8 @@ class GameStateData:
     state._agentMoved = self._agentMoved
     state._foodEaten = self._foodEaten
     state._capsuleEaten = self._capsuleEaten
+    state.roomsOff = self.roomsOff
+    state.romsOne = self.roomsOn
     return state
 
   def copyAgentStates( self, agentStates ):
