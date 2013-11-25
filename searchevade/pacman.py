@@ -351,15 +351,15 @@ class PacmanRules:
           state.data.roomsOff.remove(samp)
           state.data.roomsOn.add(samp)
     elif random.random()<0.1:
-      print "switching rooms"
+      #print "switching rooms"
       state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
       state.data.roomsOn = {'h'}
       sample = random.sample(state.data.roomsOff, 4)
       for samp in sample:
         state.data.roomsOff.remove(samp)
         state.data.roomsOn.add(samp)
-    print state.data.roomsOff
-    print state.data.roomsOn
+    #print state.data.roomsOff
+    #print state.data.roomsOn
   lightSwitches = staticmethod(lightSwitches) 
 
   def consume( position, state ):
@@ -425,7 +425,7 @@ class GhostRules:
     #   possibleActions.remove( Directions.STOP )
     # if reverse in possibleActions and len( possibleActions ) > 1:
     #   possibleActions.remove( reverse )
-    print possibleActions
+    #print possibleActions
     return possibleActions
   getLegalActions = staticmethod( getLegalActions )
 

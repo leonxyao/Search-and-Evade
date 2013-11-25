@@ -6,7 +6,14 @@ from util import manhattanDistance
 import util
 
 from game import Grid
+from random import choice 
 import heapq
+
+import MDP
+import MDPUtil
+
+policy = []
+haveCalculated = False
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
@@ -74,8 +81,8 @@ class RandomGhost( GhostAgent ):
     return abs(startLoc[0]-endLoc[0]) + abs(startLoc[1]-endLoc[1])
 
   def getActions(self,gameState,node):
-    locX = node.loc[0]
-    locY = node.loc[1]
+    locX = int(node.loc[0])
+    locY = int(node.loc[1])
     layout = gameState.getLayout()
     layoutRoom = gameState.getLayout().room
     #print len(layoutText),len(layoutText[0])
@@ -103,15 +110,12 @@ class RandomGhost( GhostAgent ):
     while not pq.isEmpty():
       currTotal = pq.removeMin()
       currNode = currTotal[0]
-      if already_visited[currNode.loc[0]][currNode.loc[1]]: continue
-      else: already_visited[currNode.loc[0]][currNode.loc[1]] = True
+      if already_visited[int(currNode.loc[0])][int(currNode.loc[1])]: continue
+      else: already_visited[int(currNode.loc[0])][int(currNode.loc[1])] = True
       if currNode.loc == endNode.loc:
-        #print 'OLD',currNode.path
-        #currNode.path.reverse()
-        #print 'NEW',currNode.path
-        #print already_visited
         if len(currNode.path) == 0 : return ('Stop',0)
-        return (currNode.path[0] , currTotal[1])
+        #print currNode.path[0]
+        return (currNode.path[0],currTotal[1])
       for action in self.getActions(gameState,currNode):
         newLoc = (-1,-1)
         if action == 'North':
@@ -127,11 +131,34 @@ class RandomGhost( GhostAgent ):
         newNode.path = list(currNode.path)
         newNode.path.append(action)
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
-    #print already_visited
+    print already_visited
 
+  def findFurthestLoc(self,state,pacmanLoc,ghostLoc):
+    layout = state.getLayout()
+    room = layout.room
+    bestLocs = [((-1,-1),-1)]
+    for x in range(room.width):
+      for y in range(room.height):
+        if room[x][y] == '%': continue
+        dist = self.heuristic(pacmanLoc,(x,y))
+        #print x,y,dist
+        if len(bestLocs) > 10:
+          if dist > bestLocs[len(bestLocs)-1][1]:
+              bestLocs[len(bestLocs)-1] = ((x,y),dist)
+              bestLocs = sorted(bestLocs,key = lambda loc: loc[1],reverse = True)
+        else:
+          bestLocs.append(((x,y),dist))
+    # closestDistance = 100000000000
+    # closestLoc = (-1,-1)
+    # for loc in bestLocs:
+    #   ghostDist = self.heuristic(loc[0],ghostLoc)
+    #   if ghostDist < closestDistance:
+    #     closestLoc = loc[0]
+    closestLoc = choice(bestLocs)[0]
+    print bestLocs, closestLoc
+    return closestLoc
 
-  "A ghost that chooses a legal action uniformly at random."
-  def getDistribution( self, state ):
+  def getCloseDistribution( self, state ):
     def getActions(gameState,loc):
       locX = int(loc[0])
       locY = int(loc[1])
@@ -146,17 +173,12 @@ class RandomGhost( GhostAgent ):
         legalActions.append('South')
       if layoutRoom[locX][locY+1] != '%':
         legalActions.append('North')
-      #print legalActions
       return legalActions
     dist = util.Counter()
-    #for a in state.getLegalActions( self.index ): dist[a] = 1.0
-    dist[state.getLegalActions(self.index)[0]] = 1.0
-    #print dist
     pacmanLoc = state.getPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
     best_action = Directions.STOP
     best_priority = -1
-    #print state.getLegalActions(self.index)
     for a in state.getLegalActions( self.index ): 
       if a == 'North':
         newGhostLoc = (ghostLoc[0],ghostLoc[1]+1)
@@ -167,18 +189,70 @@ class RandomGhost( GhostAgent ):
       elif a == 'East':
         newGhostLoc = (ghostLoc[0]+1,ghostLoc[1])
       priority = self.A_star(pacmanLoc,newGhostLoc,self.heuristic,state)
-      #print priority[0] , priority[1]
-      dist[a] = priority[1] * len(getActions(state,newGhostLoc))
-    #   if priority[1] > best_priority:
-    #     best_priority = priority[1]
-    #     best_action = a
-    # dist[best_action] = 1.0
-    #print dist
+      if priority[1] > best_priority:
+        best_priority = priority[1]
+        best_action = a
+
+    dist[best_action] = 1.0
+    print 'before: ', dist
     if len(dist) > 0:
       dist.normalize()
+    # dist[Directions.STOP] = 0.1
+    # dist.normalize()
+    return dist
+
+  "A ghost that chooses a legal action uniformly at random."
+  def getFarDistribution( self, state ):
+    dist = util.Counter()
+    pacmanLoc = state.getPacmanPosition()
+    ghostLoc = state.getGhostPosition(self.index)
+    #print pacmanLoc, ghostLoc
+    furthestLoc = self.findFurthestLoc(state,pacmanLoc,ghostLoc)
+    #print furthestLoc 
+    action = self.A_star(ghostLoc,furthestLoc,self.heuristic,state)[0]
+    #print action
+    dist[action] = 0.9
     dist[Directions.STOP] = 0.1
     dist.normalize()
+    #print dist
     return dist
+
+
+  def getPolicyDistribution(self,state):
+    global haveCalculated
+    global policy
+    dist = util.Counter()
+    if not haveCalculated:
+      algorithm = MDP.PolicyIteration()
+      mdp = MDPUtil.SearchEvadeMDP(state)
+      algorithm.solve(mdp,0.001)
+      mdp.computeStates()
+      policy = algorithm.pi
+      haveCalculated = True
+      for pair in policy.keys():
+        print pair[0],pair[1],policy[pair]
+    pacmanLoc = state.getPacmanPosition()
+    ghostLoc = state.getGhostPosition(self.index)
+    action = policy[(pacmanLoc,ghostLoc)]
+    if action == (-1,0):
+      dist['East'] = 1.0
+    elif action == (1,0):
+      dist['West'] = 1.0
+    elif action == (0,-1):
+      dist['South'] = 1.0
+    elif action == (0,1):
+      dist['North'] = 1.0
+    return dist
+
+  def getDistribution( self, state ):
+    # pacmanLoc = state.getPacmanPosition()
+    # ghostLoc = state.getGhostPosition(self.index)
+    # dist = self.heuristic(pacmanLoc,ghostLoc)
+    # if dist > 5:
+    #   return self.getFarDistribution(state)
+    # else:
+    #   return self.getCloseDistribution(state)
+    return self.getPolicyDistribution(state)
 
 class DirectionalGhost( GhostAgent ):
   "A ghost that prefers to rush Pacman, or flee when scared."

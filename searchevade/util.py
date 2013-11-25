@@ -319,7 +319,7 @@ def normalize(vectorOrCounter):
   """
   normalizedCounter = Counter()
   if type(vectorOrCounter) == type(normalizedCounter):
-    counter = vectorOrCounter
+    counter = vectorOrCounter 
     total = float(counter.totalCount())
     if total == 0: return counter
     for key in counter.keys():
@@ -363,7 +363,7 @@ def sample(distribution, values = None):
       i-=1
       break
     total += distribution[i]
-  print i , len(values)
+  #print i , len(values)
   return values[i]
 
 def sampleFromCounter(ctr):
