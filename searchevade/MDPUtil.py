@@ -1,4 +1,9 @@
-import collections, random
+import collections, random, submission
+from game import Grid
+from game import Agent
+import heapq
+
+
 
 # An abstract class representing a Markov Decision Process (MDP).
 class MDP:
@@ -49,6 +54,143 @@ class NumberLineMDP(MDP):
     def discount(self): return 0.9
 
 ############################################################
+class Search():
+  class PriorityQueue:
+    def  __init__(self):
+      self.DONE = -100000
+      self.heap = []
+      self.priorities = {}  # Map from state to priority
+
+    # Insert |state| into the heap with priority |newPriority| if
+    # |state| isn't in the heap or |newPriority| is smaller than the existing
+    # priority.
+    # Return whether the priority queue was updated.
+    def update(self, state, newPriority):
+      oldPriority = self.priorities.get(state)
+      if oldPriority == None or newPriority < oldPriority:
+          self.priorities[state] = newPriority
+          heapq.heappush(self.heap, (newPriority, state))
+          return True
+      return False
+
+    # Returns (state with minimum priority, priority)
+    # or (None, None) if the priority queue is empty.
+    def removeMin(self):
+      while len(self.heap) > 0:
+        priority, state = heapq.heappop(self.heap)
+        if self.priorities[state] == self.DONE: continue  # Outdated priority, skip
+        self.priorities[state] = self.DONE
+        return (state, priority)
+      return (None, None) # Nothing left...
+
+    def isEmpty(self):
+      return len(self.heap) == 0
+
+  class node:
+    def __init__(self,x,y):
+      self.loc = (x,y)
+      self.path = []
+      self.cost = 0
+      #self.gameState = gameState
+    def __eq__(self,other):
+      self.loc == other.loc
+    def __hash__(self):
+      return hash(self.loc)
+
+  def heuristic(self,startLoc,endLoc):
+    #print startLoc,endLoc
+    return abs(startLoc[0]-endLoc[0]) + abs(startLoc[1]-endLoc[1])
+
+  def getActions(self,gameState,node):
+    locX = node.loc[0]
+    locY = node.loc[1]
+    layout = gameState.getLayout()
+    layoutRoom = gameState.getLayout().room
+    #print len(layoutText),len(layoutText[0])
+
+    legalActions = []
+    if layoutRoom[locX-1][locY] != '%':
+      legalActions.append('West')
+    if layoutRoom[locX+1][locY] != '%':
+      legalActions.append('East')
+    if layoutRoom[locX][locY-1] != '%':
+      legalActions.append('South')
+    if layoutRoom[locX][locY+1] != '%':
+      legalActions.append('North')
+    #print legalActions
+    return legalActions
+
+  def A_star(self,startLoc,endLoc,heuristic,gameState):
+    layout = gameState.getLayout()
+    already_visited = Grid(layout.width,layout.height,False)
+    pq = self.PriorityQueue()
+    endNode = self.node(endLoc[0],endLoc[1])
+    startNode = self.node(startLoc[0],startLoc[1])
+    #print 'start actions: ', self.getActions(gameState,startNode)
+    pq.update(startNode,self.heuristic(startNode.loc,endNode.loc))
+    while not pq.isEmpty():
+      currNode = pq.removeMin()[0]
+      if already_visited[currNode.loc[0]][currNode.loc[1]]: continue
+      else: already_visited[currNode.loc[0]][currNode.loc[1]] = True
+      if currNode.loc == endNode.loc:
+        return currNode.path[0]
+
+      for action in self.getActions(gameState,currNode):
+        newLoc = (-1,-1)
+        if action == 'North':
+          newLoc = (currNode.loc[0],currNode.loc[1]+1)
+        elif action == 'South':
+          newLoc = (currNode.loc[0],currNode.loc[1]-1)
+        elif action == 'West':
+          newLoc = (currNode.loc[0]-1,currNode.loc[1])
+        elif action == 'East':
+          newLoc = (currNode.loc[0]+1,currNode.loc[1])
+        newNode = self.node(newLoc[0],newLoc[1])
+        newNode.cost = currNode.cost + 1
+        newNode.path = list(currNode.path)
+        newNode.path.append(action)
+        pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
+    #print already_visited
+
+  def getAction(self, gameState):
+    """
+      Returns the minimax action from the current gameState using self.depth
+      and self.evaluationFunction. Terminal states can be found by one of the following: 
+      pacman won, pacman lost or there are no legal moves. 
+
+      Here are some method calls that might be useful when implementing minimax.
+
+      gameState.getLegalActions(agentIndex):
+        Returns a list of legal actions for an agent
+        agentIndex=0 means Pacman, ghosts are >= 1
+
+      Directions.STOP:
+        The stop direction, which is always legal
+
+      gameState.generateSuccessor(agentIndex, action):
+        Returns the successor game state after an agent takes an action
+
+      gameState.getNumAgents():
+        Returns the total number of agents in the game
+  
+      gameState.isWin():
+        Returns True if it's a winning state
+  
+      gameState.isLose():
+        Returns True if it's a losing state
+
+      self.depth:
+        The depth to which search should continue
+    """
+
+    # BEGIN_YOUR_CODE (around 68 lines of code expected)
+    pacmanLoc = gameState.getPacmanPosition()
+    ghostLoc = gameState.getGhostPosition(1)
+    action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
+    return action
+    # END_YOUR_CODE
+
+
 
 class SearchEvadeMDP(MDP):
     def __init__(self,gameState): self.gameState = gameState
@@ -70,10 +212,21 @@ class SearchEvadeMDP(MDP):
           if layoutRoom[locX][locY+1] != '%':
             legalActions.append((0,1)) #North
           return legalActions
+    
+    def convertAction(self, action): 
+      if action == "West":
+        return(-1,0)
+      if action == "East":
+        return (1,0)
+      if action == "South":
+        return (0,-1)
+      return (0,1)
+
     def startState(self):
         pacmanLoc = self.gameState.getPacmanPosition()
         ghostLoc = self.gameState.getGhostPosition(1)
         return (pacmanLoc,ghostLoc)
+    
     def actions(self,state):
         legalActions = self.getActions(self.gameState,state[1])
         return legalActions
@@ -85,20 +238,19 @@ class SearchEvadeMDP(MDP):
             return [ ( ((-1,-1),(-1,-1)) ,1.0,-1) ]
         pacmanLoc = state[0]
         ghostLoc = state[1]
-        pacmanActions = self.getActions(self.gameState,pacmanLoc)
+        searcher = Search()
+        pacmanAction = self.convertAction(searcher.getAction(self.gameState))
         #print pacmanActions
         tuples = []
-        for pacmanAction in pacmanActions:
-            newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
-            newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
-            #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
-            newState = (newPacmanLoc,newGhostLoc)
-            if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
-                #print 'here?'
-                nextTuple = (newState,1.0/len(pacmanActions),-1)
-            else: nextTuple = (newState,1.0/len(pacmanActions),0)
-            tuples.append(nextTuple)
-        #print tuples
+        newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
+        newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
+        #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
+        newState = (newPacmanLoc,newGhostLoc)
+        if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
+            #print 'here?'
+            nextTuple = (newState,1.0,-1)
+        else: nextTuple = (newState,1.0,0)
+        tuples.append(nextTuple)
         return tuples
 
     def discount(self):

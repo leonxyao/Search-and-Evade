@@ -252,14 +252,9 @@ class MinimaxAgent(MultiAgentSearchAgent):
       if already_visited[currNode.loc[0]][currNode.loc[1]]: continue
       else: already_visited[currNode.loc[0]][currNode.loc[1]] = True
       if currNode.loc == endNode.loc:
-        #print 'OLD',currNode.path
-        #currNode.path.reverse()
-        #print 'NEW',currNode.path
-        #print already_visited
         return currNode.path[0]
+      
       for action in self.getActions(gameState,currNode):
-      #for action in currNode.gameState.getLegalActions(0): #0 for pacman
-        #newGameState = currNode.gameState.generateSuccessor(0,action)
         newLoc = (-1,-1)
         if action == 'North':
           newLoc = (currNode.loc[0],currNode.loc[1]+1)
