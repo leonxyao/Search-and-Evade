@@ -230,18 +230,20 @@ class RandomGhost( GhostAgent ):
       policy = algorithm.pi
       haveCalculated = True
       for pair in policy.keys():
-        print pair[0],pair[1],policy[pair]
-    pacmanLoc = state.getPacmanPosition()
+        print pair[0],pair[1],pair[2],policy[pair]
+    pacmanLoc = state.getPrevPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
-    action = policy[(pacmanLoc,ghostLoc)]
+    print 'getPolicyDist: ', pacmanLoc,ghostLoc,'False'
+    action = policy[(pacmanLoc,ghostLoc,False)]
     if action == (-1,0):
-      dist['East'] = 1.0
-    elif action == (1,0):
       dist['West'] = 1.0
+    elif action == (1,0):
+      dist['East'] = 1.0
     elif action == (0,-1):
       dist['South'] = 1.0
     elif action == (0,1):
       dist['North'] = 1.0
+    print 'Distribution: ', dist
     return dist
 
   def getDistribution( self, state ):

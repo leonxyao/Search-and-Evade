@@ -117,6 +117,9 @@ class GameState:
     """
     return self.data.agentStates[0].copy()
 
+  def getPrevPacmanPosition(self):
+    return self.data.agentStates[0].getPrevPosition()
+
   def getPacmanPosition( self ):
     return self.data.agentStates[0].getPosition()
 
@@ -194,6 +197,7 @@ class GameState:
 
   def isWin( self ):
     return self.data._win
+
 
   #############################################
   #             Helper methods:               #

@@ -29,12 +29,15 @@ class MDP:
         self.states = set()
         queue = []
         self.states.add(self.startState())
+        print 'initial states: ',self.states
         queue.append(self.startState())
         while len(queue) > 0:
             state = queue.pop()
             for action in self.actions(state):
+                print 'action: ', state, action
                 for newState, prob, reward in self.succAndProbReward(state, action):
                     if newState not in self.states:
+                        print 'new state: ',newState
                         self.states.add(newState)
                         queue.append(newState)
         # print "%d states" % len(self.states)
@@ -185,7 +188,7 @@ class SearchEvadeMDP(MDP):
             return (0,1)
 
     def startState(self):
-        pacmanLoc = (1,2)#self.gameState.getPacmanPosition()
+        pacmanLoc = (1,3)#self.gameState.getPacmanPosition()
         layout = self.gameState.getLayout()
 
         ghostLoc = self.gameState.getGhostPosition(1)
@@ -203,7 +206,7 @@ class SearchEvadeMDP(MDP):
         #     print 'bye'
         #     return [ ( ((-1,-1),(-1,-1)) ,1.0,-1) ]
         if state[2]:
-            print 'done'
+            #print 'done'
             return []
         pacmanLoc = state[0]
         ghostLoc = state[1]
@@ -215,7 +218,7 @@ class SearchEvadeMDP(MDP):
         newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
         #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
         if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
-            print 'terminal state'
+            #print 'terminal state'
             #terminalState = ((-1,-1),(-1,-1))
             terminalState = (newPacmanLoc,newGhostLoc,True)
             nextTuple = (terminalState,1.0,-1)

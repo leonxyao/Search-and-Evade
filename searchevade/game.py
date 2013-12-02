@@ -60,12 +60,16 @@ class Configuration:
   horizontally and y increases vertically.  Therefore, north is the direction of increasing y, or (0,1).
   """
 
-  def __init__(self, pos, direction):
+  def __init__(self, pos, direction, prevPos = None):
+    self.prevPos = prevPos
     self.pos = pos
     self.direction = direction
 
   def getPosition(self):
     return (self.pos)
+
+  def getPrevPosition(self):
+    return (self.prevPos)
 
   def getDirection(self):
     return self.direction
@@ -99,7 +103,7 @@ class Configuration:
     direction = Actions.vectorToDirection(vector)
     if direction == Directions.STOP:
       direction = self.direction # There is no stop direction
-    return Configuration((x + dx, y+dy), direction)
+    return Configuration((x + dx, y+dy), direction, (x,y))
 
 class AgentState:
   """
@@ -135,6 +139,10 @@ class AgentState:
   def getPosition(self):
     if self.configuration == None: return None
     return self.configuration.getPosition()
+
+  def getPrevPosition(self):
+    if self.configuration == None: return None
+    return self.configuration.getPrevPosition()
 
   def getDirection(self):
     return self.configuration.getDirection()

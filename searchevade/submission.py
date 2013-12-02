@@ -314,7 +314,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
     ghostLoc = gameState.getGhostPosition(1)
     #print pacmanLoc,ghostLoc
     action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-    #print action, pacmanLoc , ghostLoc
+    print 'PACMAN ACTIONS: ',action, pacmanLoc , ghostLoc
     return action
     # END_YOUR_CODE
 
