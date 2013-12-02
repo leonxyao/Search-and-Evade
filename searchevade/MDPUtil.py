@@ -152,52 +152,13 @@ class Search():
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
     #print already_visited
 
-  def getAction(self, gameState):
-    """
-      Returns the minimax action from the current gameState using self.depth
-      and self.evaluationFunction. Terminal states can be found by one of the following: 
-      pacman won, pacman lost or there are no legal moves. 
-
-      Here are some method calls that might be useful when implementing minimax.
-
-      gameState.getLegalActions(agentIndex):
-        Returns a list of legal actions for an agent
-        agentIndex=0 means Pacman, ghosts are >= 1
-
-      Directions.STOP:
-        The stop direction, which is always legal
-
-      gameState.generateSuccessor(agentIndex, action):
-        Returns the successor game state after an agent takes an action
-
-      gameState.getNumAgents():
-        Returns the total number of agents in the game
   
-      gameState.isWin():
-        Returns True if it's a winning state
-  
-      gameState.isLose():
-        Returns True if it's a losing state
-
-      self.depth:
-        The depth to which search should continue
-    """
-
-    # BEGIN_YOUR_CODE (around 68 lines of code expected)
-    pacmanLoc = gameState.getPacmanPosition()
-    ghostLoc = gameState.getGhostPosition(1)
-    action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-    return action
-    # END_YOUR_CODE
-
-
-
 class SearchEvadeMDP(MDP):
     def __init__(self,gameState): self.gameState = gameState
     def getActions(self,gameState,loc):
-          if loc == (-1,-1): 
-            print 'RAWRRRRR'
-            return []
+          # if loc == (-1,-1): 
+          #   print 'RAWRRRRR'
+          #   return []
           locX = int(loc[0])
           locY = int(loc[1])
           layout = gameState.getLayout()
@@ -214,18 +175,23 @@ class SearchEvadeMDP(MDP):
           return legalActions
     
     def convertAction(self, action): 
-      if action == "West":
-        return(-1,0)
-      if action == "East":
-        return (1,0)
-      if action == "South":
-        return (0,-1)
-      return (0,1)
+        if action == "West":
+            return(-1,0)
+        elif action == "East":
+            return (1,0)
+        elif action == "South":
+            return (0,-1)
+        elif action == "North":
+            return (0,1)
 
     def startState(self):
-        pacmanLoc = self.gameState.getPacmanPosition()
+        pacmanLoc = (1,2)#self.gameState.getPacmanPosition()
+        layout = self.gameState.getLayout()
+
         ghostLoc = self.gameState.getGhostPosition(1)
-        return (pacmanLoc,ghostLoc)
+
+        print 'start: ',pacmanLoc, ghostLoc
+        return (pacmanLoc,ghostLoc,False)
     
     def actions(self,state):
         legalActions = self.getActions(self.gameState,state[1])
@@ -233,23 +199,29 @@ class SearchEvadeMDP(MDP):
 
     def succAndProbReward(self,state,action):
         #print state[0] == state[1]
-        if state[0] == state[1]:
-            print 'bye'
-            return [ ( ((-1,-1),(-1,-1)) ,1.0,-1) ]
+        # if state[0] == state[1]:
+        #     print 'bye'
+        #     return [ ( ((-1,-1),(-1,-1)) ,1.0,-1) ]
+        if state[2]:
+            print 'done'
+            return []
         pacmanLoc = state[0]
         ghostLoc = state[1]
         searcher = Search()
-        pacmanAction = self.convertAction(searcher.getAction(self.gameState))
-        #print pacmanActions
+        pacmanAction = self.convertAction(searcher.A_star(pacmanLoc,ghostLoc,searcher.heuristic,self.gameState))
+        #print pacmanAction
         tuples = []
         newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
         newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
         #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
-        newState = (newPacmanLoc,newGhostLoc)
         if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
-            #print 'here?'
-            nextTuple = (newState,1.0,-1)
-        else: nextTuple = (newState,1.0,0)
+            print 'terminal state'
+            #terminalState = ((-1,-1),(-1,-1))
+            terminalState = (newPacmanLoc,newGhostLoc,True)
+            nextTuple = (terminalState,1.0,-1)
+        else: 
+            newState = (newPacmanLoc,newGhostLoc,False)
+            nextTuple = (newState,1.0,0)
         tuples.append(nextTuple)
         return tuples
 

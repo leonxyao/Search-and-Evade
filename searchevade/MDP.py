@@ -58,7 +58,11 @@ def computeOptimalPolicy(mdp, V):
     """
     # BEGIN_YOUR_CODE (around 4 lines of code expected)
     pi = {}
+    print 'states: ',mdp.states, len(mdp.states)
+    print 'actions: ', mdp.actions
     for state in mdp.states:
+        if len(mdp.actions(state)) == 0: 
+            continue
         bestAction = [mdp.actions(state)[0]]
         bestQ = computeQ(mdp,V,state,bestAction[0])
         for action in mdp.actions(state):
