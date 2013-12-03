@@ -158,7 +158,7 @@ class RandomGhost( GhostAgent ):
     if terminalState in bestLocs:
       bestLocs.remove(terminalState)
     closestLoc = choice(bestLocs)[0]
-    print bestLocs, closestLoc
+    #print bestLocs, closestLoc
     return closestLoc
 
   def getCloseDistribution( self, state ):
@@ -245,7 +245,16 @@ class RandomGhost( GhostAgent ):
       dist['South'] = 1.0
     elif action == (0,1):
       dist['North'] = 1.0
+    elif action == (0,0):
+      dist['Stop'] = 1.0
     print 'Distribution: ', dist
+    return dist
+
+  def getRandomDistribution(self,state):
+    dist = util.Counter()
+    for action in state.getLegalActions( self.index ):
+      dist[action] = 1.0
+    dist.normalize()
     return dist
 
   def getDistribution( self, state ):
@@ -256,7 +265,7 @@ class RandomGhost( GhostAgent ):
       return self.getFarDistribution(state)
     else:
       return self.getCloseDistribution(state)
-    #return self.getPolicyDistribution(state)
+    # return self.getPolicyDistribution(state)
 
 class DirectionalGhost( GhostAgent ):
   "A ghost that prefers to rush Pacman, or flee when scared."

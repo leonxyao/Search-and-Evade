@@ -2,6 +2,7 @@ import collections, random, submission
 from game import Grid
 from game import Agent
 import heapq
+from game import Directions
 
 AstarPolicy = {}
 
@@ -162,14 +163,11 @@ class Search():
 class SearchEvadeMDP(MDP):
     def __init__(self,gameState): self.gameState = gameState
     def getActions(self,gameState,loc):
-          # if loc == (-1,-1): 
-          #   print 'RAWRRRRR'
-          #   return []
           locX = int(loc[0])
           locY = int(loc[1])
           layout = gameState.getLayout()
           layoutRoom = gameState.getLayout().room
-          legalActions = []
+          legalActions = []#[(0,0)]
           if layoutRoom[locX-1][locY] != '%':
             legalActions.append((-1,0)) #West
           if layoutRoom[locX+1][locY] != '%':
@@ -189,6 +187,8 @@ class SearchEvadeMDP(MDP):
             return (0,-1)
         elif action == "North":
             return (0,1)
+        # else:
+        #     return (0,0)
 
     def startState(self):
         pacmanLoc = (1,11)#self.gameState.getPacmanPosition()
@@ -205,12 +205,7 @@ class SearchEvadeMDP(MDP):
 
     def succAndProbReward(self,state,action):
         global AstarPolicy
-        #print state[0] == state[1]
-        # if state[0] == state[1]:
-        #     print 'bye'
-        #     return [ ( ((-1,-1),(-1,-1)) ,1.0,-1) ]
         if state[2]:
-            #print 'done'
             return []
         pacmanLoc = state[0]
         ghostLoc = state[1]
@@ -220,16 +215,13 @@ class SearchEvadeMDP(MDP):
           AstarPolicy[(pacmanLoc,ghostLoc)] = pacmanAction
         else:
           pacmanAction = AstarPolicy[(pacmanLoc,ghostLoc)]
-        #print pacmanAction
         tuples = []
         newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
         newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
         #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
         if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
-            #print 'terminal state'
-            #terminalState = ((-1,-1),(-1,-1))
             terminalState = (newPacmanLoc,newGhostLoc,True)
-            nextTuple = (terminalState,1.0,-100)
+            nextTuple = (terminalState,1.0,-100000)
         else: 
             reward = searcher.heuristic(newPacmanLoc,newGhostLoc)
             # if searcher.heuristic(newPacmanLoc,newGhostLoc) > 5:

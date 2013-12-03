@@ -193,7 +193,7 @@ class GameState:
     return self.data.layout.walls[x][y]
 
   def isLose( self ):
-    return self.data._lose
+    return self.data._lose or (self.data.score==-200)
 
   def isWin( self ):
     return self.data._win
@@ -354,7 +354,7 @@ class PacmanRules:
         for samp in sample:
           state.data.roomsOff.remove(samp)
           state.data.roomsOn.add(samp)
-    elif random.random()<0.1:
+    elif random.random()<0.15:
       #print "switching rooms"
       state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
       state.data.roomsOn = {'h'}
@@ -702,6 +702,11 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     winRate = wins.count(True)/ float(len(wins))
     print 'Average Score:', sum(scores) / float(len(scores))
     print 'Scores:       ', ', '.join([str(score) for score in scores])
+    winScores = []
+    for elem in scores:
+      if elem!= -200:
+        winScores.append(elem)
+    print "Average Win Score: ", sum(winScores) / float(len(winScores))
     print 'Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate)
     print 'Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins])
 
