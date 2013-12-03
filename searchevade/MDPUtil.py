@@ -3,6 +3,7 @@ from game import Grid
 from game import Agent
 import heapq
 
+AstarPolicy = {}
 
 
 # An abstract class representing a Markov Decision Process (MDP).
@@ -34,12 +35,14 @@ class MDP:
         while len(queue) > 0:
             state = queue.pop()
             for action in self.actions(state):
-                print 'action: ', state, action
+                #print 'action: ', state, action
                 for newState, prob, reward in self.succAndProbReward(state, action):
                     if newState not in self.states:
-                        print 'new state: ',newState
+                        #print 'new state: ',newState
                         self.states.add(newState)
                         queue.append(newState)
+        global AstarPolicy
+        print 'ASTARPOLICY: ',AstarPolicy, len(AstarPolicy)
         # print "%d states" % len(self.states)
         # print self.states
 
@@ -188,7 +191,7 @@ class SearchEvadeMDP(MDP):
             return (0,1)
 
     def startState(self):
-        pacmanLoc = (1,3)#self.gameState.getPacmanPosition()
+        pacmanLoc = (1,11)#self.gameState.getPacmanPosition()
         layout = self.gameState.getLayout()
 
         ghostLoc = self.gameState.getGhostPosition(1)
@@ -201,6 +204,7 @@ class SearchEvadeMDP(MDP):
         return legalActions
 
     def succAndProbReward(self,state,action):
+        global AstarPolicy
         #print state[0] == state[1]
         # if state[0] == state[1]:
         #     print 'bye'
@@ -211,7 +215,11 @@ class SearchEvadeMDP(MDP):
         pacmanLoc = state[0]
         ghostLoc = state[1]
         searcher = Search()
-        pacmanAction = self.convertAction(searcher.A_star(pacmanLoc,ghostLoc,searcher.heuristic,self.gameState))
+        if (pacmanLoc,ghostLoc) not in AstarPolicy.keys():
+          pacmanAction = self.convertAction(searcher.A_star(pacmanLoc,ghostLoc,searcher.heuristic,self.gameState))
+          AstarPolicy[(pacmanLoc,ghostLoc)] = pacmanAction
+        else:
+          pacmanAction = AstarPolicy[(pacmanLoc,ghostLoc)]
         #print pacmanAction
         tuples = []
         newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
@@ -221,10 +229,13 @@ class SearchEvadeMDP(MDP):
             #print 'terminal state'
             #terminalState = ((-1,-1),(-1,-1))
             terminalState = (newPacmanLoc,newGhostLoc,True)
-            nextTuple = (terminalState,1.0,-1)
+            nextTuple = (terminalState,1.0,-100)
         else: 
+            reward = searcher.heuristic(newPacmanLoc,newGhostLoc)
+            # if searcher.heuristic(newPacmanLoc,newGhostLoc) > 5:
+            #   reward = 1
             newState = (newPacmanLoc,newGhostLoc,False)
-            nextTuple = (newState,1.0,0)
+            nextTuple = (newState,1.0,reward)
         tuples.append(nextTuple)
         return tuples
 

@@ -6,6 +6,8 @@ from game import Grid
 from game import Agent
 import heapq
 
+import MDPUtil
+
 class ReflexAgent(Agent):
   """
     A reflex agent chooses an action at each choice point by examining
@@ -271,6 +273,24 @@ class MinimaxAgent(MultiAgentSearchAgent):
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
     #print already_visited
 
+  def convertAction(self, action): 
+        if action == "West":
+            return(-1,0)
+        elif action == "East":
+            return (1,0)
+        elif action == "South":
+            return (0,-1)
+        elif action == "North":
+            return (0,1)
+  def convertTuple(self,action):
+        if action == (-1,0):
+            return "West"
+        elif action == (1,0):
+            return "East"
+        elif action == (0,-1):
+            return "South"
+        elif action == (0,1):
+            return "North"
 
 
 
@@ -308,14 +328,24 @@ class MinimaxAgent(MultiAgentSearchAgent):
     # BEGIN_YOUR_CODE (around 68 lines of code expected)
     #score,action = self.getBestMinimaxValue(gameState,0,0)
     #print gameState.getRooms()
-    #pacmanLoc = gameState.getLayout().agentPositions[0][1]
-    #ghostLoc = gameState.getLayout().agentPositions[1][1]
+    # pacmanLoc = gameState.getLayout().agentPositions[0][1]
+    # ghostLoc = gameState.getLayout().agentPositions[1][1]
     pacmanLoc = gameState.getPacmanPosition()
     ghostLoc = gameState.getGhostPosition(1)
+    room = gameState.getLoctoRoom()
+    if room[int(ghostLoc[0])][int(ghostLoc[1])] in gameState.data.roomsOn:
+      print ghostLoc, ' in roomOn: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
+    else:
+      print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
     #print pacmanLoc,ghostLoc
-    action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-    print 'PACMAN ACTIONS: ',action, pacmanLoc , ghostLoc
+    if (pacmanLoc, ghostLoc) in MDPUtil.AstarPolicy.keys():
+      action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)])
+    else:
+      action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
+      MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
+    #print 'PACMAN ACTIONS: ',action, pacmanLoc , ghostLoc
     return action
+
     # END_YOUR_CODE
 
 class AlphaBetaAgent(MultiAgentSearchAgent):

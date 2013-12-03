@@ -177,8 +177,8 @@ class GameState:
     if walls[x][y] == True: ...
     """
     return self.data.layout.walls
-  def getCoords(self):
-    return self.data.layout.rooms
+  def getLoctoRoom(self):
+    return self.data.layout.room
   
   def getRooms(self):
     return self.data.layout.rooms_mapping

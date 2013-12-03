@@ -208,11 +208,11 @@ class RandomGhost( GhostAgent ):
     ghostLoc = state.getGhostPosition(self.index)
     #print pacmanLoc, ghostLoc
     furthestLoc = self.findFurthestLoc(state,pacmanLoc,ghostLoc)
-    #print furthestLoc 
+    print 'GET FAR DIST: ',ghostLoc,furthestLoc 
     action = self.A_star(ghostLoc,furthestLoc,self.heuristic,state)[0]
     #print action
-    dist[action] = 0.9
-    dist[Directions.STOP] = 0.1
+    dist[action] = 1.0
+    # dist[Directions.STOP] = 0.1
     dist.normalize()
     #print dist
     return dist
@@ -229,6 +229,7 @@ class RandomGhost( GhostAgent ):
       mdp.computeStates()
       policy = algorithm.pi
       haveCalculated = True
+      print 'MDP calculated'
       for pair in policy.keys():
         print pair[0],pair[1],pair[2],policy[pair]
     pacmanLoc = state.getPrevPacmanPosition()
@@ -247,14 +248,14 @@ class RandomGhost( GhostAgent ):
     return dist
 
   def getDistribution( self, state ):
-    # pacmanLoc = state.getPacmanPosition()
-    # ghostLoc = state.getGhostPosition(self.index)
-    # dist = self.heuristic(pacmanLoc,ghostLoc)
-    # if dist > 5:
-    #   return self.getFarDistribution(state)
-    # else:
-    #   return self.getCloseDistribution(state)
-    return self.getPolicyDistribution(state)
+    pacmanLoc = state.getPacmanPosition()
+    ghostLoc = state.getGhostPosition(self.index)
+    dist = self.heuristic(pacmanLoc,ghostLoc)
+    if dist > 3:
+      return self.getFarDistribution(state)
+    else:
+      return self.getCloseDistribution(state)
+    #return self.getPolicyDistribution(state)
 
 class DirectionalGhost( GhostAgent ):
   "A ghost that prefers to rush Pacman, or flee when scared."

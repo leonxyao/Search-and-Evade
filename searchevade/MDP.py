@@ -12,6 +12,7 @@ def computeQ(mdp, V, state, action):
     """
     # BEGIN_YOUR_CODE (around 2 lines of code expected)
     sum = 0
+    minList = [0.0]
     #print 'computeQ init: ', state, action
     for case in mdp.succAndProbReward(state,action):
         newState = case[0]
@@ -21,8 +22,11 @@ def computeQ(mdp, V, state, action):
         # if newState not in V.keys(): 
         #     print 'computeQ continue: ', newState
         #     continue
-        sum += prob*(reward+mdp.discount()*V[newState])
-    return sum
+        #print 'computeQ: ', state, newState, action
+        # sum += prob*(reward+mdp.discount()*V[newState])
+        minList.append(prob*(reward+mdp.discount()*V[newState]))
+    return min(minList)
+    # return sum
     # END_YOUR_CODE
 
 ############################################################
@@ -63,8 +67,8 @@ def computeOptimalPolicy(mdp, V):
     """
     # BEGIN_YOUR_CODE (around 4 lines of code expected)
     pi = {}
-    print 'states: ',mdp.states, len(mdp.states)
-    print 'actions: ', mdp.actions
+    # print 'states: ',mdp.states, len(mdp.states)
+    # print 'actions: ', mdp.actions
     for state in mdp.states:
         # if len(mdp.actions(state)) == 0: 
         #     continue
@@ -78,6 +82,7 @@ def computeOptimalPolicy(mdp, V):
             elif currQ == bestQ:
                 bestAction.append(action)
         pi[state] = max(bestAction)
+        #print 'computeOptimalPolicy: ',pi[state]
     return pi
     # END_YOUR_CODE
 
