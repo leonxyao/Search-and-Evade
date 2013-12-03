@@ -374,10 +374,10 @@ class GameStateData:
       self.roomsOff = prevState.roomsOff
       self.roomsOn = prevState.roomsOn
     else:
-      # self.roomsOff = set ('a b c d e f g h i j k l m n o p q r s t u v w x y z'.split())
-      # self.roomsOn = set ('H')
-      self.roomsOff = set ('a b c d e f g'.split())
-      self.roomsOn = set()
+      self.roomsOff = set ('a b c d e f g h i j k l m n o p q r s t u v w x y z'.split())
+      self.roomsOn = set ('H')
+      # self.roomsOff = set ('a b c d e f g'.split())
+      # self.roomsOn = set()
     self._foodEaten = None
     self._capsuleEaten = None
     self._agentMoved = None

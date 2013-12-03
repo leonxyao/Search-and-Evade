@@ -350,15 +350,15 @@ class PacmanRules:
 
   def lightSwitches(state):
     if len(state.data.roomsOn) == 1:
-        sample = random.sample(state.data.roomsOff, 4)
+        sample = random.sample(state.data.roomsOff, 6)
         for samp in sample:
           state.data.roomsOff.remove(samp)
           state.data.roomsOn.add(samp)
-    elif random.random()<0.15:
+    elif random.random()<0.10:
       #print "switching rooms"
       state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
-      state.data.roomsOn = {'h'}
-      sample = random.sample(state.data.roomsOff, 4)
+      state.data.roomsOn = {'H'}
+      sample = random.sample(state.data.roomsOff, 6)
       for samp in sample:
         state.data.roomsOff.remove(samp)
         state.data.roomsOn.add(samp)
