@@ -154,6 +154,9 @@ class RandomGhost( GhostAgent ):
     #   ghostDist = self.heuristic(loc[0],ghostLoc)
     #   if ghostDist < closestDistance:
     #     closestLoc = loc[0]
+    terminalState = ((-1,-1),-1)
+    if terminalState in bestLocs:
+      bestLocs.remove(terminalState)
     closestLoc = choice(bestLocs)[0]
     print bestLocs, closestLoc
     return closestLoc
@@ -194,7 +197,6 @@ class RandomGhost( GhostAgent ):
         best_action = a
 
     dist[best_action] = 1.0
-    print 'before: ', dist
     if len(dist) > 0:
       dist.normalize()
     # dist[Directions.STOP] = 0.1
@@ -208,7 +210,6 @@ class RandomGhost( GhostAgent ):
     ghostLoc = state.getGhostPosition(self.index)
     #print pacmanLoc, ghostLoc
     furthestLoc = self.findFurthestLoc(state,pacmanLoc,ghostLoc)
-    print 'GET FAR DIST: ',ghostLoc,furthestLoc 
     action = self.A_star(ghostLoc,furthestLoc,self.heuristic,state)[0]
     #print action
     dist[action] = 1.0
