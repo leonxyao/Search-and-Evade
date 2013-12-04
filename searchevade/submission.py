@@ -329,7 +329,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       while True:
         predictLoc = util.chooseFromDistribution(possibleGhostStates)
         while (room[int(predictLoc[0])][int(predictLoc[1])] in gameState.data.roomsOn) and len(possibleGhostStates.keys())!=1:
-          possibleGhostStates[predictLoc] = 0
+          possibleGhostStates[predictLoc] = 0s
           predictLoc = util.chooseFromDistribution(possibleGhostStates)
           print 'WHILE LOOOOOOP: ',predictLoc, possibleGhostStates
         if predictLoc != pacmanLoc: break

@@ -353,10 +353,14 @@ class RandomGhost( GhostAgent ):
 
     dist = self.heuristic(pacmanLoc,ghostLoc)
     if dist > 4:
+      #uncomment for go to closest Dark Room Policy or Far Distribution Policy
+
       #return self.getDarkRoomDistribution(state)
       return self.getFarDistribution(state)
     else:
       return self.getCloseDistribution(state)
+
+    # comment out above and uncomment getPolicyDistribution for MDP
     # return self.getPolicyDistribution(state)
 
 class DirectionalGhost( GhostAgent ):
