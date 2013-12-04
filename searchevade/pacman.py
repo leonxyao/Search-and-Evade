@@ -350,7 +350,7 @@ class PacmanRules:
 
   def lightSwitches(state):
     if len(state.data.roomsOn) == 1:
-        sample = random.sample(state.data.roomsOff, 6)
+        sample = random.sample(state.data.roomsOff, 4)
         for samp in sample:
           state.data.roomsOff.remove(samp)
           state.data.roomsOn.add(samp)
@@ -358,7 +358,7 @@ class PacmanRules:
       #print "switching rooms"
       state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
       state.data.roomsOn = {'H'}
-      sample = random.sample(state.data.roomsOff, 6)
+      sample = random.sample(state.data.roomsOff, 4)
       for samp in sample:
         state.data.roomsOff.remove(samp)
         state.data.roomsOn.add(samp)
@@ -706,7 +706,9 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     for elem in scores:
       if elem!= -200:
         winScores.append(elem)
-    print "Average Win Score: ", sum(winScores) / float(len(winScores))
+    if len(winScores)>0:
+      print "Average Win Score: ", sum(winScores) / float(len(winScores))
+    else: print "Average Win Score: ", 0.0
     print 'Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate)
     print 'Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins])
 

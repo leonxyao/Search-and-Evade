@@ -7,10 +7,12 @@ from game import Agent
 import heapq
 
 import MDPUtil,util
+from sets import Set
 
 possibleGhostStates = util.Counter()
-possibleGhostStates[(13,1)] = 1.0
-frontierStates = [(13,1)]
+possibleGhostStates[(12,1)] = 1.0
+frontierStates = Set()
+frontierStates.add((12,1))
 
 class ReflexAgent(Agent):
   """
@@ -295,7 +297,69 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return "South"
         elif action == (0,1):
             return "North"
+  def fullyObservableAction(self,gameState):
+    pacmanLoc = gameState.getPacmanPosition()
+    ghostLoc = gameState.getGhostPosition(1)
+    if (pacmanLoc, ghostLoc) in MDPUtil.AstarPolicy.keys():
+        action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)])
+    else:
+      action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
+      MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
+    return action
 
+  def partiallyObservableAction(self,gameState):
+    global possibleGhostStates
+    global frontierStates
+    pacmanLoc = gameState.getPacmanPosition()
+    ghostLoc = gameState.getGhostPosition(1)
+    room = gameState.getLoctoRoom()
+    if room[int(ghostLoc[0])][int(ghostLoc[1])] in gameState.data.roomsOn:
+      print ghostLoc, ' in roomOn: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
+      possibleGhostStates.clear()
+      possibleGhostStates[ghostLoc] = 1.0
+      frontierStates = [ghostLoc]
+      if (pacmanLoc, ghostLoc) in MDPUtil.AstarPolicy.keys():
+        action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)])
+      else:
+        action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
+        MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
+    else:
+      print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
+      predictLoc = (-1,-1)
+      while True:
+        predictLoc = util.chooseFromDistribution(possibleGhostStates)
+        while (room[int(predictLoc[0])][int(predictLoc[1])] in gameState.data.roomsOn) and len(possibleGhostStates.keys())!=1:
+          possibleGhostStates[predictLoc] = 0
+          predictLoc = util.chooseFromDistribution(possibleGhostStates)
+          print 'WHILE LOOOOOOP: ',predictLoc, possibleGhostStates
+        if predictLoc != pacmanLoc: break
+      tempFrontierStates = Set()
+      for frontierLoc in frontierStates:
+        tempNode = self.node(int(frontierLoc[0]),int(frontierLoc[1]))
+        possibleActions = self.getActions(gameState,tempNode)
+
+        for frontierAction in possibleActions:
+          actionTuple = self.convertAction(frontierAction)
+          newFrontierState = (frontierLoc[0]+actionTuple[0],frontierLoc[1]+actionTuple[1])
+          
+          if newFrontierState in possibleGhostStates.keys(): continue
+          if room[int(newFrontierState[0])][int(newFrontierState[1])] in gameState.data.roomsOn: continue
+          tempFrontierStates.add(newFrontierState)
+          oldProb = possibleGhostStates[frontierLoc]
+          possibleGhostStates[newFrontierState] += oldProb/float(len(possibleActions))
+
+      possibleGhostStates.normalize()
+      frontierStates = tempFrontierStates
+      #print 'FRONTIER STATES: ',frontierStates
+      print 'GHOST STATES: ', possibleGhostStates
+      print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
+
+      if (pacmanLoc, predictLoc) in MDPUtil.AstarPolicy.keys():
+        action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)])
+      else:
+        action = self.A_star(pacmanLoc,predictLoc,self.heuristic,gameState)
+        MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)] = self.convertAction(action)
+    return action
 
 
   def getAction(self, gameState):
@@ -330,65 +394,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (around 68 lines of code expected)
-    #score,action = self.getBestMinimaxValue(gameState,0,0)
-    #print gameState.getRooms()
-    # pacmanLoc = gameState.getLayout().agentPositions[0][1]
-    # ghostLoc = gameState.getLayout().agentPositions[1][1]
-    global possibleGhostStates
-    global frontierStates
-    pacmanLoc = gameState.getPacmanPosition()
-    ghostLoc = gameState.getGhostPosition(1)
-    room = gameState.getLoctoRoom()
-    if room[int(ghostLoc[0])][int(ghostLoc[1])] in gameState.data.roomsOn:
-      print ghostLoc, ' in roomOn: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
-      possibleGhostStates.clear()
-      possibleGhostStates[ghostLoc] = 1.0
-      frontierStates = [ghostLoc]
-      if (pacmanLoc, ghostLoc) in MDPUtil.AstarPolicy.keys():
-        action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)])
-      else:
-        action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-        MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
-    else:
-      print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
-      predictLoc = pacmanLoc
-      while predictLoc==pacmanLoc:
-        print predictLoc
-        predictLoc = util.chooseFromDistribution(possibleGhostStates)
-
-      tempFrontierStates = []
-      for frontierLoc in frontierStates:
-        tempNode = self.node(int(frontierLoc[0]),int(frontierLoc[1]))
-        possibleActions = self.getActions(gameState,tempNode)
-
-        for frontierAction in possibleActions:
-          actionTuple = self.convertAction(frontierAction)
-          newFrontierState = (frontierLoc[0]+actionTuple[0],frontierLoc[1]+actionTuple[1])
-          
-          if newFrontierState in possibleGhostStates.keys(): continue
-          if room[int(newFrontierState[0])][int(newFrontierState[1])] in gameState.data.roomsOn: continue
-          tempFrontierStates.append(newFrontierState)
-          possibleGhostStates[newFrontierState] = 1.0
-
-      possibleGhostStates.normalize()
-      frontierStates = tempFrontierStates
-      print 'FRONTIER STATES: ',frontierStates
-      print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc
-
-      if (pacmanLoc, predictLoc) in MDPUtil.AstarPolicy.keys():
-        action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)])
-      else:
-        action = self.A_star(pacmanLoc,predictLoc,self.heuristic,gameState)
-        MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)] = self.convertAction(action)
-
-    #print pacmanLoc,ghostLoc
-    #print 'PACMAN ACTIONS: ',action, pacmanLoc , ghostLoc
-
-    # if (pacmanLoc, ghostLoc) in MDPUtil.AstarPolicy.keys():
-    #     action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)])
-    # else:
-    #   action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
-    #   MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
+    action = self.partiallyObservableAction(gameState)
+    #action = self.fullyObservableAction(gameState)
     return action
 
     # END_YOUR_CODE

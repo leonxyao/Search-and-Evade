@@ -11,9 +11,15 @@ import heapq
 
 import MDP
 import MDPUtil
+from sets import Set
 
 policy = []
 haveCalculated = False
+
+possiblePacmanStates = util.Counter()
+possiblePacmanStates[(1,11)] = 1.0
+frontierStates = Set()
+frontierStates.add((1,11))
 
 class GhostAgent( Agent ):
   def __init__( self, index ):
@@ -250,6 +256,43 @@ class RandomGhost( GhostAgent ):
     print 'Distribution: ', dist
     return dist
 
+  def convertAction(self, action): 
+        if action == "West":
+            return(-1,0)
+        elif action == "East":
+            return (1,0)
+        elif action == "South":
+            return (0,-1)
+        elif action == "North":
+            return (0,1)
+
+  def getDarkRoomDistribution(self,state):
+    ghostLoc = state.getGhostPosition(self.index)
+    dist = util.Counter()
+    onRooms = state.data.roomsOn
+    room = state.getLoctoRoom()
+    locationQ = [state.getGhostPosition(self.index)]
+    while len(locationQ)>0:
+      currLoc = locationQ.pop(0)
+      # print 'currLoc: ',currLoc
+      roomLetter = room[int(currLoc[0])][int(currLoc[1])]
+      if (roomLetter not in onRooms) and (roomLetter != '|'):
+        action = self.A_star(ghostLoc,currLoc,self.heuristic,state)[0]
+        dist[action] = 1.0
+        return dist
+      else:
+        currNode = self.node(currLoc[0],currLoc[1])
+        possibleActions = self.getActions(state,currNode)
+        for action in possibleActions:
+          actionTuple = self.convertAction(action)
+          newLoc = (currLoc[0]+actionTuple[0],currLoc[1]+actionTuple[1])
+          if newLoc in locationQ: continue
+          locationQ.append(newLoc)
+    return self.getFarDistribution(state)
+
+
+
+
   def getRandomDistribution(self,state):
     dist = util.Counter()
     for action in state.getLegalActions( self.index ):
@@ -257,11 +300,60 @@ class RandomGhost( GhostAgent ):
     dist.normalize()
     return dist
 
+  def getPartiallyObservaleLoc(self,state):
+    global possiblePacmanStates
+    global frontierStates
+    pacmanLoc = state.getPacmanPosition()
+    ghostLoc = state.getGhostPosition(self.index)
+    room = state.getLoctoRoom()
+    if room[int(pacmanLoc[0])][int(pacmanLoc[1])] in state.data.roomsOn:
+      print pacmanLoc, ' in roomOn: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
+      possiblePacmanStates.clear()
+      possiblePacmanStates[pacmanLoc] = 1.0
+      frontierStates = [pacmanLoc]
+      return pacmanLoc
+
+    else:
+      print pacmanLoc, ' in roomOff: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
+
+      predictLoc = util.chooseFromDistribution(possiblePacmanStates)
+      while (room[int(predictLoc[0])][int(predictLoc[1])] in state.data.roomsOn) and len(possiblePacmanStates.keys())!=1:
+        possiblePacmanStates[predictLoc] = 0
+        predictLoc = util.chooseFromDistribution(possiblePacmanStates)
+        print 'NEW PREDICT LOC: ', predictLoc,possiblePacmanStates
+
+      tempFrontierStates = Set()
+      for frontierLoc in frontierStates:
+        tempNode = self.node(int(frontierLoc[0]),int(frontierLoc[1]))
+        possibleActions = self.getActions(state,tempNode)
+
+        for frontierAction in possibleActions:
+          actionTuple = self.convertAction(frontierAction)
+          newFrontierState = (frontierLoc[0]+actionTuple[0],frontierLoc[1]+actionTuple[1])
+          
+          # if newFrontierState in possiblePacmanStates.keys(): continue
+          if room[int(newFrontierState[0])][int(newFrontierState[1])] in state.data.roomsOn: continue
+          tempFrontierStates.add(newFrontierState)
+          oldProb = possiblePacmanStates[frontierLoc]
+          possiblePacmanStates[newFrontierState] += oldProb/float(len(possibleActions))
+
+      possiblePacmanStates.normalize()
+      frontierStates = tempFrontierStates
+      print 'PACMAN STATES: ', possiblePacmanStates
+      print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
+      pacmanLoc = predictLoc
+      return pacmanLoc
+
   def getDistribution( self, state ):
     pacmanLoc = state.getPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
+
+    #uncomment out for partially Observable
+    pacmanLoc = self.getPartiallyObservaleLoc(state)
+
     dist = self.heuristic(pacmanLoc,ghostLoc)
-    if dist > 3:
+    if dist > 4:
+      #return self.getDarkRoomDistribution(state)
       return self.getFarDistribution(state)
     else:
       return self.getCloseDistribution(state)
