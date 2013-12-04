@@ -4,6 +4,8 @@ from game import Agent
 import heapq
 from game import Directions
 
+import layout
+
 AstarPolicy = {}
 
 
@@ -191,12 +193,11 @@ class SearchEvadeMDP(MDP):
         #     return (0,0)
 
     def startState(self):
-        pacmanLoc = (1,11)#self.gameState.getPacmanPosition()
+        pacmanLoc = layout.pacmanStartLoc#(1,11)
         layout = self.gameState.getLayout()
 
         ghostLoc = self.gameState.getGhostPosition(1)
 
-        print 'start: ',pacmanLoc, ghostLoc
         return (pacmanLoc,ghostLoc,False)
     
     def actions(self,state):

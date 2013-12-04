@@ -7,12 +7,15 @@ from game import Agent
 import heapq
 
 import MDPUtil,util
+
+import layout
 from sets import Set
 
 possibleGhostStates = util.Counter()
-possibleGhostStates[(12,1)] = 1.0
+possibleGhostStates[layout.ghostStartLoc] = 1.0
 frontierStates = Set()
-frontierStates.add((12,1))
+frontierStates.add(layout.ghostStartLoc)
+print 'GLOBAL Ghost: ', layout.ghostStartLoc
 
 class ReflexAgent(Agent):
   """
@@ -329,7 +332,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
       while True:
         predictLoc = util.chooseFromDistribution(possibleGhostStates)
         while (room[int(predictLoc[0])][int(predictLoc[1])] in gameState.data.roomsOn) and len(possibleGhostStates.keys())!=1:
-          possibleGhostStates[predictLoc] = 0s
+          possibleGhostStates[predictLoc] = 0
           predictLoc = util.chooseFromDistribution(possibleGhostStates)
           print 'WHILE LOOOOOOP: ',predictLoc, possibleGhostStates
         if predictLoc != pacmanLoc: break

@@ -13,13 +13,15 @@ import MDP
 import MDPUtil
 from sets import Set
 
+import layout
+
 policy = []
 haveCalculated = False
 
 possiblePacmanStates = util.Counter()
-possiblePacmanStates[(1,11)] = 1.0
+possiblePacmanStates[layout.pacmanStartLoc] = 1.0
 frontierStates = Set()
-frontierStates.add((1,11))
+frontierStates.add(layout.pacmanStartLoc)
 
 class GhostAgent( Agent ):
   def __init__( self, index ):

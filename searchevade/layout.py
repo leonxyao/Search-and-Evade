@@ -6,6 +6,8 @@ import random
 from collections import defaultdict
 
 VISIBILITY_MATRIX_CACHE = {}
+pacmanStartLoc = (-1,-1)
+ghostStartLoc = (-1,-1)
 
 class Layout:
   """
@@ -127,6 +129,8 @@ class Layout:
           self.rooms_mapping['wall'].append((x,y))
   
   def processLayoutChar(self, x, y, layoutChar):
+    global pacmanStartLoc
+    global ghostStartLoc
     if layoutChar == '%':      
       self.walls[x][y] = True
     elif layoutChar == '|':
@@ -137,8 +141,10 @@ class Layout:
       self.capsules.append((x, y))   
     elif layoutChar == 'P':    
       self.agentPositions.append( (0, (x, y) ) )
+      pacmanStartLoc = (x,y)
     elif layoutChar in ['G']:    
       self.agentPositions.append( (1, (x, y) ) )
+      ghostStartLoc = (x,y)
       self.numGhosts += 1
     elif layoutChar in  ['1', '2', '3', '4']:
       self.agentPositions.append( (int(layoutChar), (x,y)))
