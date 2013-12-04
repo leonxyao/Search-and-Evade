@@ -309,20 +309,20 @@ class RandomGhost( GhostAgent ):
     ghostLoc = state.getGhostPosition(self.index)
     room = state.getLoctoRoom()
     if room[int(pacmanLoc[0])][int(pacmanLoc[1])] in state.data.roomsOn:
-      print pacmanLoc, ' in roomOn: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
+      # print pacmanLoc, ' in roomOn: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
       possiblePacmanStates.clear()
       possiblePacmanStates[pacmanLoc] = 1.0
       frontierStates = [pacmanLoc]
       return pacmanLoc
 
     else:
-      print pacmanLoc, ' in roomOff: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
+      # print pacmanLoc, ' in roomOff: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
 
       predictLoc = util.chooseFromDistribution(possiblePacmanStates)
       while (room[int(predictLoc[0])][int(predictLoc[1])] in state.data.roomsOn) and len(possiblePacmanStates.keys())!=1:
-        possiblePacmanStates[predictLoc] = 0
+        del possiblePacmanStates[predictLoc]
         predictLoc = util.chooseFromDistribution(possiblePacmanStates)
-        print 'NEW PREDICT LOC: ', predictLoc,possiblePacmanStates
+        #print 'NEW PREDICT LOC: ', predictLoc
 
       tempFrontierStates = Set()
       for frontierLoc in frontierStates:
@@ -341,8 +341,8 @@ class RandomGhost( GhostAgent ):
 
       possiblePacmanStates.normalize()
       frontierStates = tempFrontierStates
-      print 'PACMAN STATES: ', possiblePacmanStates
-      print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
+      # print 'PACMAN STATES: ', possiblePacmanStates
+      # print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
       pacmanLoc = predictLoc
       return pacmanLoc
 
@@ -350,7 +350,7 @@ class RandomGhost( GhostAgent ):
     pacmanLoc = state.getPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
 
-    #uncomment out for partially Observable
+    # #uncomment out for partially Observable
     pacmanLoc = self.getPartiallyObservaleLoc(state)
 
     dist = self.heuristic(pacmanLoc,ghostLoc)
@@ -362,8 +362,10 @@ class RandomGhost( GhostAgent ):
     else:
       return self.getCloseDistribution(state)
 
+    #return self.getRandomDistribution(state)
+
     # comment out above and uncomment getPolicyDistribution for MDP
-    # return self.getPolicyDistribution(state)
+    #return self.getPolicyDistribution(state)
 
 class DirectionalGhost( GhostAgent ):
   "A ghost that prefers to rush Pacman, or flee when scared."

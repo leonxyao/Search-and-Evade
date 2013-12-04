@@ -6,6 +6,8 @@ from game import Directions
 
 import layout
 
+pacmanStartLoc = layout.pacmanStartLoc
+
 AstarPolicy = {}
 
 
@@ -193,7 +195,8 @@ class SearchEvadeMDP(MDP):
         #     return (0,0)
 
     def startState(self):
-        pacmanLoc = layout.pacmanStartLoc#(1,11)
+        global pacmanStartLoc
+        pacmanLoc = pacmanStartLoc #(1,11)
         layout = self.gameState.getLayout()
 
         ghostLoc = self.gameState.getGhostPosition(1)

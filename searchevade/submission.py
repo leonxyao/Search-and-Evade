@@ -15,7 +15,7 @@ possibleGhostStates = util.Counter()
 possibleGhostStates[layout.ghostStartLoc] = 1.0
 frontierStates = Set()
 frontierStates.add(layout.ghostStartLoc)
-print 'GLOBAL Ghost: ', layout.ghostStartLoc
+# print 'GLOBAL Ghost: ', layout.ghostStartLoc
 
 class ReflexAgent(Agent):
   """
@@ -327,14 +327,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
         MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
     else:
-      print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
+      # print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
       predictLoc = (-1,-1)
       while True:
         predictLoc = util.chooseFromDistribution(possibleGhostStates)
         while (room[int(predictLoc[0])][int(predictLoc[1])] in gameState.data.roomsOn) and len(possibleGhostStates.keys())!=1:
-          possibleGhostStates[predictLoc] = 0
+          del possibleGhostStates[predictLoc]
           predictLoc = util.chooseFromDistribution(possibleGhostStates)
-          print 'WHILE LOOOOOOP: ',predictLoc, possibleGhostStates
+          #print 'WHILE LOOOOOOP: ',predictLoc
         if predictLoc != pacmanLoc: break
       tempFrontierStates = Set()
       for frontierLoc in frontierStates:
@@ -354,8 +354,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
       possibleGhostStates.normalize()
       frontierStates = tempFrontierStates
       #print 'FRONTIER STATES: ',frontierStates
-      print 'GHOST STATES: ', possibleGhostStates
-      print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
+      # print 'GHOST STATES: ', possibleGhostStates
+      # print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
 
       if (pacmanLoc, predictLoc) in MDPUtil.AstarPolicy.keys():
         action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)])
@@ -397,8 +397,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (around 68 lines of code expected)
-    action = self.partiallyObservableAction(gameState)
-    #action = self.fullyObservableAction(gameState)
+    #action = self.partiallyObservableAction(gameState)
+    action = self.fullyObservableAction(gameState)
     return action
 
     # END_YOUR_CODE
