@@ -102,14 +102,12 @@ class Search():
       self.loc = (x,y)
       self.path = []
       self.cost = 0
-      #self.gameState = gameState
     def __eq__(self,other):
       self.loc == other.loc
     def __hash__(self):
       return hash(self.loc)
 
   def heuristic(self,startLoc,endLoc):
-    #print startLoc,endLoc
     return abs(startLoc[0]-endLoc[0]) + abs(startLoc[1]-endLoc[1])
 
   def getActions(self,gameState,node):
@@ -117,7 +115,6 @@ class Search():
     locY = node.loc[1]
     layout = gameState.getLayout()
     layoutRoom = gameState.getLayout().room
-    #print len(layoutText),len(layoutText[0])
 
     legalActions = []
     if layoutRoom[locX-1][locY] != '%':
@@ -128,7 +125,6 @@ class Search():
       legalActions.append('South')
     if layoutRoom[locX][locY+1] != '%':
       legalActions.append('North')
-    #print legalActions
     return legalActions
 
   def A_star(self,startLoc,endLoc,heuristic,gameState):
@@ -137,7 +133,6 @@ class Search():
     pq = self.PriorityQueue()
     endNode = self.node(endLoc[0],endLoc[1])
     startNode = self.node(startLoc[0],startLoc[1])
-    #print 'start actions: ', self.getActions(gameState,startNode)
     pq.update(startNode,self.heuristic(startNode.loc,endNode.loc))
     while not pq.isEmpty():
       currNode = pq.removeMin()[0]
@@ -161,7 +156,7 @@ class Search():
         newNode.path = list(currNode.path)
         newNode.path.append(action)
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
-    #print already_visited
+
 
   
 class SearchEvadeMDP(MDP):
@@ -191,8 +186,6 @@ class SearchEvadeMDP(MDP):
             return (0,-1)
         elif action == "North":
             return (0,1)
-        # else:
-        #     return (0,0)
 
     def startState(self):
         global pacmanStartLoc
@@ -222,14 +215,11 @@ class SearchEvadeMDP(MDP):
         tuples = []
         newPacmanLoc = (pacmanLoc[0] + pacmanAction[0], pacmanLoc[1] + pacmanAction[1])
         newGhostLoc = (ghostLoc[0] + action[0], ghostLoc[1]+action[1])
-        #print 'pacman: ', newPacmanLoc, 'ghost: ', newGhostLoc
         if newPacmanLoc == newGhostLoc or (newPacmanLoc == ghostLoc and newGhostLoc == pacmanLoc):
             terminalState = (newPacmanLoc,newGhostLoc,True)
             nextTuple = (terminalState,1.0,-100000)
         else: 
             reward = searcher.heuristic(newPacmanLoc,newGhostLoc)
-            # if searcher.heuristic(newPacmanLoc,newGhostLoc) > 5:
-            #   reward = 1
             newState = (newPacmanLoc,newGhostLoc,False)
             nextTuple = (newState,1.0,reward)
         tuples.append(nextTuple)

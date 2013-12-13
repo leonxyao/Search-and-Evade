@@ -15,7 +15,6 @@ possibleGhostStates = util.Counter()
 possibleGhostStates[layout.ghostStartLoc] = 1.0
 frontierStates = Set()
 frontierStates.add(layout.ghostStartLoc)
-# print 'GLOBAL Ghost: ', layout.ghostStartLoc
 
 class ReflexAgent(Agent):
   """
@@ -228,7 +227,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
 
   def heuristic(self,startLoc,endLoc):
-    #print startLoc,endLoc
     return abs(startLoc[0]-endLoc[0]) + abs(startLoc[1]-endLoc[1])
 
   def getActions(self,gameState,node):
@@ -236,7 +234,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
     locY = node.loc[1]
     layout = gameState.getLayout()
     layoutRoom = gameState.getLayout().room
-    #print len(layoutText),len(layoutText[0])
 
     legalActions = []
     if layoutRoom[locX-1][locY] != '%':
@@ -247,7 +244,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
       legalActions.append('South')
     if layoutRoom[locX][locY+1] != '%':
       legalActions.append('North')
-    #print legalActions
     return legalActions
 
   def A_star(self,startLoc,endLoc,heuristic,gameState):
@@ -256,13 +252,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
     pq = self.PriorityQueue()
     endNode = self.node(endLoc[0],endLoc[1])
     startNode = self.node(startLoc[0],startLoc[1])
-    #print 'start actions: ', self.getActions(gameState,startNode)
     pq.update(startNode,self.heuristic(startNode.loc,endNode.loc))
     while not pq.isEmpty():
       currNode = pq.removeMin()[0]
       if already_visited[currNode.loc[0]][currNode.loc[1]]: continue
       else: already_visited[currNode.loc[0]][currNode.loc[1]] = True
       if currNode.loc == endNode.loc:
+        if len(currNode.path) == 0: 
+          print 'A_STAR STOP'
+          return 'Stop'
         return currNode.path[0]
       
       for action in self.getActions(gameState,currNode):
@@ -280,7 +278,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         newNode.path = list(currNode.path)
         newNode.path.append(action)
         pq.update(newNode,newNode.cost+self.heuristic(newNode.loc,endNode.loc))
-    #print already_visited
 
   def convertAction(self, action): 
         if action == "West":
@@ -291,6 +288,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return (0,-1)
         elif action == "North":
             return (0,1)
+        elif action == "Stop":
+            return (0,0)
   def convertTuple(self,action):
         if action == (-1,0):
             return "West"
@@ -300,6 +299,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return "South"
         elif action == (0,1):
             return "North"
+        elif action == (0,0):
+            return "Stop"
   def fullyObservableAction(self,gameState):
     pacmanLoc = gameState.getPacmanPosition()
     ghostLoc = gameState.getGhostPosition(1)
@@ -317,7 +318,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
     ghostLoc = gameState.getGhostPosition(1)
     room = gameState.getLoctoRoom()
     if room[int(ghostLoc[0])][int(ghostLoc[1])] in gameState.data.roomsOn:
-      print ghostLoc, ' in roomOn: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
       possibleGhostStates.clear()
       possibleGhostStates[ghostLoc] = 1.0
       frontierStates = [ghostLoc]
@@ -327,14 +327,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         action = self.A_star(pacmanLoc,ghostLoc,self.heuristic,gameState)
         MDPUtil.AstarPolicy[(pacmanLoc,ghostLoc)] = self.convertAction(action)
     else:
-      # print ghostLoc, ' in roomOff: ', room[int(ghostLoc[0])][int(ghostLoc[1])]
       predictLoc = (-1,-1)
       while True:
         predictLoc = util.chooseFromDistribution(possibleGhostStates)
+        if len(possibleGhostStates.keys())==1:
+          predictLoc = possibleGhostStates.keys()[0]
+          break
         while (room[int(predictLoc[0])][int(predictLoc[1])] in gameState.data.roomsOn) and len(possibleGhostStates.keys())!=1:
           del possibleGhostStates[predictLoc]
           predictLoc = util.chooseFromDistribution(possibleGhostStates)
-          #print 'WHILE LOOOOOOP: ',predictLoc
+          if len(possibleGhostStates.keys())==1:
+            predictLoc = possibleGhostStates.keys()[0]
+            break
         if predictLoc != pacmanLoc: break
       tempFrontierStates = Set()
       for frontierLoc in frontierStates:
@@ -353,9 +357,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
       possibleGhostStates.normalize()
       frontierStates = tempFrontierStates
-      #print 'FRONTIER STATES: ',frontierStates
-      # print 'GHOST STATES: ', possibleGhostStates
-      # print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
 
       if (pacmanLoc, predictLoc) in MDPUtil.AstarPolicy.keys():
         action = self.convertTuple(MDPUtil.AstarPolicy[(pacmanLoc,predictLoc)])
@@ -397,8 +398,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     # BEGIN_YOUR_CODE (around 68 lines of code expected)
-    #action = self.partiallyObservableAction(gameState)
-    action = self.fullyObservableAction(gameState)
+    action = self.partiallyObservableAction(gameState)
+    #action = self.fullyObservableAction(gameState)
     return action
 
     # END_YOUR_CODE
@@ -546,7 +547,6 @@ def betterEvaluationFunction(currentGameState):
   """
 
   # BEGIN_YOUR_CODE (around 69 lines of code expected)
-  #currEvaluationFunction = self.evaluationFunction(currentGameState)
   distancesToGhosts = 0
   pacPos = currentGameState.getPacmanPosition()
   foodPos = currentGameState.getFood()
@@ -566,7 +566,6 @@ def betterEvaluationFunction(currentGameState):
         totalFoodDistances+= distance
         if closestFood>distance:
           closestFood = distance
-  #currEvalFnWeight = 1
   ghostWeight = 1000
   foodWeight = 1
   scoreWeight = 100

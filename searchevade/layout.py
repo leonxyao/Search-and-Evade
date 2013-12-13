@@ -31,8 +31,6 @@ class Layout:
 
     self.processLayoutText(layoutText,roomText)
 
-    #print self.rooms_mapping
-    # self.initializeVisibilityMatrix()
     
   def getNumGhosts(self):
     return self.numGhosts
@@ -107,8 +105,6 @@ class Layout:
      | - Door
     Other characters are ignored.
     """
-    # x = 1
-    # assert(x==2)
     maxY = self.height - 1
     for y in range(self.height):       
       for x in range(self.width):
@@ -172,20 +168,6 @@ def getLayout(name, back = 2):
     layout = getLayout(name, back -1)
     os.chdir(curdir)
   return layout
-
-# def getRoom(name, back = 2):
-#   if name.endswith('.lay'):
-#     layout = tryToLoad('layouts/' + name + 'room')
-#     if layout == None: layout = tryToLoad(name + 'room')
-#   else:
-#     layout = tryToLoad('layouts/' + name + 'room' + '.lay')
-#     if layout == None: layout = tryToLoad(name + '.lay')
-#   if layout == None and back >= 0:
-#     curdir = os.path.abspath('.')
-#     os.chdir('..')
-#     layout = getRoom(name, back -1)
-#     os.chdir(curdir)
-#   return layout
 
 def tryToLoad(fullname):
   if(not os.path.exists(fullname + '.lay')): return None

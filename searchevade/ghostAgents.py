@@ -77,7 +77,7 @@ class RandomGhost( GhostAgent ):
       self.loc = (x,y)
       self.path = []
       self.cost = 0
-      #self.gameState = gameState
+
     def __eq__(self,other):
       self.loc == other.loc
     def __hash__(self):
@@ -85,7 +85,6 @@ class RandomGhost( GhostAgent ):
 
 
   def heuristic(self,startLoc,endLoc):
-    #print startLoc,endLoc
     return abs(startLoc[0]-endLoc[0]) + abs(startLoc[1]-endLoc[1])
 
   def getActions(self,gameState,node):
@@ -93,7 +92,6 @@ class RandomGhost( GhostAgent ):
     locY = int(node.loc[1])
     layout = gameState.getLayout()
     layoutRoom = gameState.getLayout().room
-    #print len(layoutText),len(layoutText[0])
 
     legalActions = []
     if layoutRoom[locX-1][locY] != '%':
@@ -104,7 +102,6 @@ class RandomGhost( GhostAgent ):
       legalActions.append('South')
     if layoutRoom[locX][locY+1] != '%':
       legalActions.append('North')
-    #print legalActions
     return legalActions
 
   def A_star(self,startLoc,endLoc,heuristic,gameState):
@@ -113,7 +110,6 @@ class RandomGhost( GhostAgent ):
     pq = self.PriorityQueue()
     endNode = self.node(endLoc[0],endLoc[1])
     startNode = self.node(startLoc[0],startLoc[1])
-    #print 'start actions: ', self.getActions(gameState,startNode)
     pq.update(startNode,self.heuristic(startNode.loc,endNode.loc))
     while not pq.isEmpty():
       currTotal = pq.removeMin()
@@ -122,7 +118,6 @@ class RandomGhost( GhostAgent ):
       else: already_visited[int(currNode.loc[0])][int(currNode.loc[1])] = True
       if currNode.loc == endNode.loc:
         if len(currNode.path) == 0 : return ('Stop',0)
-        #print currNode.path[0]
         return (currNode.path[0],currTotal[1])
       for action in self.getActions(gameState,currNode):
         newLoc = (-1,-1)
@@ -149,24 +144,16 @@ class RandomGhost( GhostAgent ):
       for y in range(room.height):
         if room[x][y] == '%': continue
         dist = self.heuristic(pacmanLoc,(x,y))
-        #print x,y,dist
         if len(bestLocs) > 10:
           if dist > bestLocs[len(bestLocs)-1][1]:
               bestLocs[len(bestLocs)-1] = ((x,y),dist)
               bestLocs = sorted(bestLocs,key = lambda loc: loc[1],reverse = True)
         else:
           bestLocs.append(((x,y),dist))
-    # closestDistance = 100000000000
-    # closestLoc = (-1,-1)
-    # for loc in bestLocs:
-    #   ghostDist = self.heuristic(loc[0],ghostLoc)
-    #   if ghostDist < closestDistance:
-    #     closestLoc = loc[0]
     terminalState = ((-1,-1),-1)
     if terminalState in bestLocs:
       bestLocs.remove(terminalState)
     closestLoc = choice(bestLocs)[0]
-    #print bestLocs, closestLoc
     return closestLoc
 
   def getCloseDistribution( self, state ):
@@ -211,19 +198,15 @@ class RandomGhost( GhostAgent ):
     # dist.normalize()
     return dist
 
-  "A ghost that chooses a legal action uniformly at random."
   def getFarDistribution( self, state ):
     dist = util.Counter()
     pacmanLoc = state.getPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
-    #print pacmanLoc, ghostLoc
     furthestLoc = self.findFurthestLoc(state,pacmanLoc,ghostLoc)
     action = self.A_star(ghostLoc,furthestLoc,self.heuristic,state)[0]
-    #print action
     dist[action] = 1.0
     # dist[Directions.STOP] = 0.1
     dist.normalize()
-    #print dist
     return dist
 
 
@@ -238,12 +221,10 @@ class RandomGhost( GhostAgent ):
       mdp.computeStates()
       policy = algorithm.pi
       haveCalculated = True
-      print 'MDP calculated'
       for pair in policy.keys():
         print pair[0],pair[1],pair[2],policy[pair]
     pacmanLoc = state.getPrevPacmanPosition()
     ghostLoc = state.getGhostPosition(self.index)
-    print 'getPolicyDist: ', pacmanLoc,ghostLoc,'False'
     action = policy[(pacmanLoc,ghostLoc,False)]
     if action == (-1,0):
       dist['West'] = 1.0
@@ -255,7 +236,6 @@ class RandomGhost( GhostAgent ):
       dist['North'] = 1.0
     elif action == (0,0):
       dist['Stop'] = 1.0
-    print 'Distribution: ', dist
     return dist
 
   def convertAction(self, action): 
@@ -276,7 +256,6 @@ class RandomGhost( GhostAgent ):
     locationQ = [state.getGhostPosition(self.index)]
     while len(locationQ)>0:
       currLoc = locationQ.pop(0)
-      # print 'currLoc: ',currLoc
       roomLetter = room[int(currLoc[0])][int(currLoc[1])]
       if (roomLetter not in onRooms) and (roomLetter != '|'):
         action = self.A_star(ghostLoc,currLoc,self.heuristic,state)[0]
@@ -309,20 +288,20 @@ class RandomGhost( GhostAgent ):
     ghostLoc = state.getGhostPosition(self.index)
     room = state.getLoctoRoom()
     if room[int(pacmanLoc[0])][int(pacmanLoc[1])] in state.data.roomsOn:
-      # print pacmanLoc, ' in roomOn: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
       possiblePacmanStates.clear()
       possiblePacmanStates[pacmanLoc] = 1.0
       frontierStates = [pacmanLoc]
       return pacmanLoc
 
     else:
-      # print pacmanLoc, ' in roomOff: ', room[int(pacmanLoc[0])][int(pacmanLoc[1])]
-
+ 
       predictLoc = util.chooseFromDistribution(possiblePacmanStates)
       while (room[int(predictLoc[0])][int(predictLoc[1])] in state.data.roomsOn) and len(possiblePacmanStates.keys())!=1:
         del possiblePacmanStates[predictLoc]
         predictLoc = util.chooseFromDistribution(possiblePacmanStates)
-        #print 'NEW PREDICT LOC: ', predictLoc
+        if len(possiblePacmanStates.keys())==1:
+          predictLoc = possiblePacmanStates.keys()[0]
+          break
 
       tempFrontierStates = Set()
       for frontierLoc in frontierStates:
@@ -333,7 +312,6 @@ class RandomGhost( GhostAgent ):
           actionTuple = self.convertAction(frontierAction)
           newFrontierState = (frontierLoc[0]+actionTuple[0],frontierLoc[1]+actionTuple[1])
           
-          # if newFrontierState in possiblePacmanStates.keys(): continue
           if room[int(newFrontierState[0])][int(newFrontierState[1])] in state.data.roomsOn: continue
           tempFrontierStates.add(newFrontierState)
           oldProb = possiblePacmanStates[frontierLoc]
@@ -341,8 +319,6 @@ class RandomGhost( GhostAgent ):
 
       possiblePacmanStates.normalize()
       frontierStates = tempFrontierStates
-      # print 'PACMAN STATES: ', possiblePacmanStates
-      # print "ghostLoc: ", ghostLoc, "predictLoc: ", predictLoc, "pacmanLoc: ", pacmanLoc
       pacmanLoc = predictLoc
       return pacmanLoc
 
@@ -357,7 +333,7 @@ class RandomGhost( GhostAgent ):
     if dist > 4:
       #uncomment for go to closest Dark Room Policy or Far Distribution Policy
 
-      #return self.getDarkRoomDistribution(state)
+      # return self.getDarkRoomDistribution(state)
       return self.getFarDistribution(state)
     else:
       return self.getCloseDistribution(state)

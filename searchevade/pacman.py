@@ -88,8 +88,7 @@ class GameState:
     # Time passes
     if agentIndex == 0:
       state.data.scoreChange += -TIME_PENALTY # Penalty for waiting around
-    #else:
-      #GhostRules.decrementTimer( state.data.agentStates[agentIndex] )
+
 
     # Resolve multi-agent effects
     GhostRules.checkDeath( state, agentIndex )
@@ -343,9 +342,6 @@ class PacmanRules:
     nearest = nearestPoint( next )
     PacmanRules.lightSwitches(state)
 
-    # if manhattanDistance( nearest, next ) <= 0.5 :
-    #   # Remove food
-    #   PacmanRules.consume( nearest, state )
   applyAction = staticmethod( applyAction )
 
   def lightSwitches(state):
@@ -355,15 +351,13 @@ class PacmanRules:
           state.data.roomsOff.remove(samp)
           state.data.roomsOn.add(samp)
     elif random.random()<0.10:
-      #print "switching rooms"
       state.data.roomsOff = state.data.roomsOff.union(state.data.roomsOn)
       state.data.roomsOn = {'H'}
       sample = random.sample(state.data.roomsOff, 4)
       for samp in sample:
         state.data.roomsOff.remove(samp)
         state.data.roomsOn.add(samp)
-    #print state.data.roomsOff
-    #print state.data.roomsOn
+
   lightSwitches = staticmethod(lightSwitches) 
 
   def consume( position, state ):
@@ -374,7 +368,6 @@ class PacmanRules:
       state.data.food = state.data.food.copy()
       state.data.food[x][y] = False
       state.data._foodEaten = position
-      # TODO: cache numFood?
       numFood = state.getNumFood()
       if numFood == 0 and not state.data._lose:
         state.data.scoreChange += 500
@@ -407,7 +400,6 @@ class GhostRules:
       locY = int(loc[1])
       layout = gameState.getLayout()
       layoutRoom = gameState.getLayout().room
-      #print len(layoutText),len(layoutText[0])
 
       legalActions = []
       if layoutRoom[locX-1][locY] != '%':
@@ -418,18 +410,10 @@ class GhostRules:
         legalActions.append('South')
       if layoutRoom[locX][locY+1] != '%':
         legalActions.append('North')
-      #print legalActions
       return legalActions
-    #conf = state.getGhostState( ghostIndex ).configuration
-    #possibleActions = Actions.getPossibleActions( conf, state.data.layout.walls )
+
     ghostLoc = state.getGhostPosition(ghostIndex)
     possibleActions = getActions(state,ghostLoc)
-    # reverse = Actions.reverseDirection( conf.direction )
-    # if Directions.STOP in possibleActions:
-    #   possibleActions.remove( Directions.STOP )
-    # if reverse in possibleActions and len( possibleActions ) > 1:
-    #   possibleActions.remove( reverse )
-    #print possibleActions
     return possibleActions
   getLegalActions = staticmethod( getLegalActions )
 
@@ -471,8 +455,7 @@ class GhostRules:
   def collide( state, ghostState, agentIndex):
     if ghostState.scaredTimer > 0:
       state.data.scoreChange += 200
-      # GhostRules.placeGhost(state, ghostState)
-      # ghostState.scaredTimer = 0
+
       # Added for first-person
       state.data._eaten[agentIndex] = True
       state.data._win = True
@@ -572,11 +555,6 @@ def readCommand( argv ):
   args['layout'] = layout.getLayout( options.layout )
   if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
 
-
-  # # Choose a room
-  # args['room'] = layout.getRoom( options.layout + 'room' )
-  # if args['room'] == None: raise Exception("The layout " + options.layout + 'room' + " cannot be found")
-  # print args['room']
 
   # Choose a Pacman agent
   noKeyboard = options.gameToReplay == None and (options.textGraphics or options.quietGraphics)
@@ -728,6 +706,4 @@ if __name__ == '__main__':
   args = readCommand( sys.argv[1:] ) # Get game components based on input
   runGames( **args )
 
-  # import cProfile
-  # cProfile.run("runGames( **args )")
   pass

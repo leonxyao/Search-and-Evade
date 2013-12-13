@@ -357,10 +357,14 @@ def sample(distribution, values = None):
     distribution = normalize(distribution)
   choice = random.random()
   i, total= 0, distribution[0]
+  counter = 0
   while choice > total:
     i += 1
     while i >= len(distribution) or i >= len(values): 
+      counter += 1
       i-=1
+      if counter > 20: 
+        return values[i]
     total += distribution[i]
   return values[i]
 
