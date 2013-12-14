@@ -281,7 +281,7 @@ class RandomGhost( GhostAgent ):
     dist.normalize()
     return dist
 
-  def getPartiallyObservaleLoc(self,state):
+  def getPartiallyObservableLoc(self,state):
     global possiblePacmanStates
     global frontierStates
     pacmanLoc = state.getPacmanPosition()
@@ -327,7 +327,7 @@ class RandomGhost( GhostAgent ):
     ghostLoc = state.getGhostPosition(self.index)
 
     # #uncomment out for partially Observable
-    pacmanLoc = self.getPartiallyObservaleLoc(state)
+    pacmanLoc = self.getPartiallyObservableLoc(state)
 
     dist = self.heuristic(pacmanLoc,ghostLoc)
     if dist > 4:
